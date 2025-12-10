@@ -1,5 +1,5 @@
 check:
-	@poetry run black --diff .
+	@poetry run black --check --diff .
 	@poetry run ruff check .
 
 clear_cache: 
