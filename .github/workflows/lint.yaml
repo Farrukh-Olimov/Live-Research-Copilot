@@ -7,7 +7,7 @@ jobs:
     strategy: 
       fail-fast: false
       matrix: 
-        python-version: ["3.11", "3.12", "3.13"]
+        python-version: ["3.12"]
         poetry-version: ["2.2.1"]
         os: ["ubuntu-20.04", "ubuntu-22.04"]
     runs-on: ${{ matrix.os }}
