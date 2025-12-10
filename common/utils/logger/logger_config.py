@@ -147,6 +147,7 @@ class LoggerManager:
 
 
 if __name__ == "__main__":
+
     # Configure logger (do this once at application startup)
     LoggerManager.configure(
         level=LogLevel.DEBUG,
@@ -176,5 +177,12 @@ if __name__ == "__main__":
     # Exception logging
     try:
         result = 1 / 0
-    except Exception as e:
+    except Exception:
         logger.exception("An error occurred during calculation")
+
+    # Different modules can have their own loggers
+    api_logger = LoggerManager.get_logger("api")
+    db_logger = LoggerManager.get_logger("database")
+
+    api_logger.info("API request received")
+    db_logger.info("Database connection established")
