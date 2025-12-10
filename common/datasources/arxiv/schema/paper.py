@@ -1,9 +1,15 @@
-from typing import List, Optional
+from typing import ClassVar, List, Optional
 
 from pydantic import BaseModel, Field
 
+from common.datasources.schema import BasePaperSchema
+from common.datasources.schema_registry import DatasourceSchemas
 
-class ArxivPaper(BaseModel):
+
+@DatasourceSchemas.register
+class ArxivPaper(BaseModel, BasePaperSchema):
+    source_name: ClassVar[str] = "arxiv"
+
     abstract: str = Field(description="Abstract of the paper")
     arxiv_id: str = Field(description="Arxiv ID of the paper")
     authors: List[str] = Field(description="Authors of the paper")
