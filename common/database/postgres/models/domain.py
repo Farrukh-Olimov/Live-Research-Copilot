@@ -1,17 +1,19 @@
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, List
 from uuid import uuid4
 
-from sqlalchemy import UUID, String
+from sqlalchemy import UUID, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import BaseModel
 
 if TYPE_CHECKING:
     from .paper import Paper
+    from .subject import Subject
 
 
 class Domain(BaseModel):
     __tablename__ = "domains"
+    __table_args__ = (UniqueConstraint("name", "code", name="uq_domain_source_code"),)
 
     id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -20,16 +22,21 @@ class Domain(BaseModel):
         primary_key=True,
         comment="Unique identifier for the academic domain",
     )
-    description: Mapped[Optional[str]] = mapped_column(
-        String, nullable=True, comment="Description of the domain"
+
+    code: Mapped[str] = mapped_column(
+        String(25), nullable=True, comment="Code for the domain, e.g., CS, Physics"
     )
+
     name: Mapped[str] = mapped_column(
-        String,
-        unique=True,
+        String(25),
         nullable=False,
         comment="Name of the domain, e.g., Computer Science, Physics",
     )
 
     papers: Mapped[List["Paper"]] = relationship(
+        back_populates="domain",
+    )
+
+    subjects: Mapped[List["Subject"]] = relationship(
         back_populates="domain",
     )

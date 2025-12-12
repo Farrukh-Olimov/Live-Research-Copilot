@@ -1,6 +1,6 @@
-import pkgutil
 import importlib
 from logging import getLogger
+import pkgutil
 
 logger = getLogger(__name__)
 

@@ -1,5 +1,5 @@
 from datetime import date
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, List
 from uuid import uuid4
 
 from sqlalchemy import UUID, Date, ForeignKey, String
@@ -11,6 +11,7 @@ from .relationships import paper_authors
 if TYPE_CHECKING:
     from .author import Author
     from .domain import Domain
+    from .relationships.paper_subject import PaperSubject
     from .source import Source
 
 
@@ -28,6 +29,7 @@ class Paper(BaseModel, TimestampModel):
         secondary=paper_authors,
         back_populates="publications",
     )
+
     main_author_id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("authors.id"),
@@ -37,6 +39,7 @@ class Paper(BaseModel, TimestampModel):
         foreign_keys=[main_author_id],
         back_populates="primary_papers",
     )
+
     domain_id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("domains.id"),
@@ -46,18 +49,16 @@ class Paper(BaseModel, TimestampModel):
     )
     domain: Mapped["Domain"] = relationship(
         foreign_keys=[domain_id],
+        back_populates="papers",
     )
-    primary_subject: Mapped[str] = mapped_column(
-        String, comment="Primary subject area within the domain"
+
+    paper_subjects: Mapped[List["PaperSubject"]] = relationship(
+        back_populates="paper",
     )
     publish_date: Mapped[date] = mapped_column(
         Date, nullable=False, comment="Date of publication"
     )
-    secondary_subject: Mapped[Optional[str]] = mapped_column(
-        String,
-        nullable=True,
-        comment="Secondary subject area within the domain, if any",
-    )
+
     source_id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("sources.id"),
@@ -68,6 +69,7 @@ class Paper(BaseModel, TimestampModel):
     )
     source: Mapped["Source"] = relationship(
         foreign_keys=[source_id],
+        back_populates="papers",
     )
     title: Mapped[str] = mapped_column(
         String, nullable=False, comment="Title of the paper"
