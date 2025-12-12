@@ -6,6 +6,7 @@ jobs:
   lint: 
     strategy: 
       fail-fast: false
+      max-parallel: 1
       matrix: 
         python-version: ["3.12"]
         poetry-version: ["2.2.1"]
@@ -34,7 +35,7 @@ jobs:
       - name: Install dependencies
         run: | 
           poetry config virtualenvs.in-project true
-          poetry install --with test --no-interaction --no-ansi
+          poetry install --only test --no-interaction --no-ansi
       
       - name: Check Linting
         run: make check
