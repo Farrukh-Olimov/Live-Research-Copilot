@@ -1,13 +1,13 @@
 from typing import ClassVar, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from common.datasources.schema import BasePaperSchema
 from common.datasources.schema_registry import DatasourceSchemas
 
 
 @DatasourceSchemas.register
-class ArxivPaper(BaseModel, BasePaperSchema):
+class ArxivPaper(BasePaperSchema):
     source_name: ClassVar[str] = "arxiv"
 
     abstract: str = Field(description="Abstract of the paper")
