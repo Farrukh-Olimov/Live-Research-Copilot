@@ -9,9 +9,9 @@ jobs:
       fail-fast: false
       max-parallel: 1
       matrix: 
-        python-version:  ${{ fromJSON(vars.PYTHON_VERSIONS) }}
+        python-version:  ${{ fromJSON(vars.POETRY_VERSIONS) }}
         poetry-version: ${{ fromJSON(vars.POETRY_VERSIONS) }}
-        os: ${{ fromJSON(vars.OS) }}
+        os: ${{ fromJSON(vars.OS_MATRIX) }}
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -28,7 +28,7 @@ jobs:
       matrix: 
         python-version:  ${{ fromJSON(vars.PYTHON_VERSIONS) }}
         poetry-version: ${{ fromJSON(vars.POETRY_VERSIONS) }}
-        os: ${{ fromJSON(vars.OS) }}
+        os: ${{ fromJSON(vars.OS_MATRIX) }}
     runs-on: ${{ matrix.os }}
     steps: 
       - uses: ./github/actions/test
