@@ -1,0 +1,31 @@
+name: Tests
+description: Setup Python + Poetry and run tests
+
+inputs:
+  python-version:
+    required: true
+  poetry-version:
+    required: true
+
+runs: 
+  using: composite 
+  steps: 
+    - uses: action/checkout@v4
+    - uses: actions/setup-python@v5
+      with: 
+        python-version: ${{ inputs.python-version }}
+
+    - name: Setup Poetry
+      uses: abatilo/actions-poetry@v3
+      with: 
+        poetry-version: ${{ inputs.poetry-version }}
+
+    - name: Configure Poetry
+      run: poetry config virtualenvs.in-project true
+        
+    - name: Install dependencies
+      run: | 
+        poetry install --only test --no-interaction --no-ansi
+    
+    - name: Run Tests
+      run: make test

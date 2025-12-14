@@ -1,5 +1,5 @@
-from .paper import ArxivPaper
+from .paper import ArxivPaperSchema
 
 __all__ = [
-    "ArxivPaper",
+    "ArxivPaperSchema",
 ]

@@ -1,3 +1,4 @@
+# pragma: no cover
 from abc import ABC, abstractmethod
 from typing import AsyncIterable
 
