@@ -2,42 +2,41 @@ name: CI
 
 on: [push, pull_request]
 
+
 jobs: 
   lint: 
     strategy: 
       fail-fast: false
       max-parallel: 1
       matrix: 
-        python-version: ["3.12"]
-        poetry-version: ["2.2.1"]
-        os: ["ubuntu-24.04", "ubuntu-22.04"]
+        python-version:  ${{ fromJSON(vars.PYTHON_VERSIONS) }}
+        poetry-version: ${{ fromJSON(vars.POETRY_VERSIONS) }}
+        os: ${{ fromJSON(vars.OS_MATRIX) }}
+
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v4   
+
+      - uses: ./.github/actions/lint
         with: 
           python-version: ${{ matrix.python-version }}
-      
-      - name: Setup Poetry
-        uses: abatilo/actions-poetry@v3
-        with: 
           poetry-version: ${{ matrix.poetry-version }}
       
-      - name: Cache Poetry 
-        uses: actions/cache@v3
-        with:
-          path: | 
-            ~/.cache/pypoetry
-            ~/.cache/pip 
-            .venv 
-          key: poetry-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('poetry.lock') }}
-          
-      - name: Install dependencies
-        run: | 
-          poetry config virtualenvs.in-project true
-          poetry install --only test --no-interaction --no-ansi
-      
-      - name: Check Linting
-        run: make check
+  test: 
+    needs: lint 
+    strategy: 
+      fail-fast: false
+      max-parallel: 1
+      matrix: 
+        python-version:  ${{ fromJSON(vars.PYTHON_VERSIONS) }}
+        poetry-version: ${{ fromJSON(vars.POETRY_VERSIONS) }}
+        os: ${{ fromJSON(vars.OS_MATRIX) }}
+    runs-on: ${{ matrix.os }}
+    steps: 
+      - uses: actions/checkout@v4   
 
+      - uses: ./.github/actions/test
+        with: 
+          python-version: ${{ matrix.python-version }}
+          poetry-version: ${{ matrix.poetry-version }}
 

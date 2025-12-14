@@ -35,7 +35,6 @@ exclude = '''
   | __pycache__
   | build
   | dist
-  | migrations
   | .gitignore
   | .postgres_data 
 )/
@@ -49,14 +48,18 @@ exclude_lines = ["pragma: no cover"] # Ignore specific lines
 fail_under = 80
 
 [tool.coverage.run]
-source = ["."]
+branch = true
+source = ["./common/datasources/"]
 omit = [
   "venv/*",
   ".venv/*",
   ".upload/*",
   "*/__init__.py",
   "*/__main__.py",
-  "*/__pycache__/*"
+  "*/__pycache__/*",
+  "*/alembic/*",
+  "*/base*.py",
+  "./common/datasources/arxiv/*.py"
 ]
 
 [tool.poetry]
@@ -93,7 +96,7 @@ log_level = "CRITICAL"
 addopts = [
   # "-n",   # concurrent tests
   # "auto", # concurrent tests
-  "--dist=loadscope",
+  # "--dist=loadscope", # loadscope: all test on module or class in same worker, load: functions to workers, loadfile: one test file per worker
   # "-s", # enable output to console
   "-v" # verbose
 ]
@@ -106,7 +109,6 @@ exclude = [
   ".venv",
   "venv",
   ".postgres_data",
-  "migrations",
   "pyproject.toml"
 ]
 

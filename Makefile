@@ -15,9 +15,9 @@ fix:
 	@poetry run ruff check --fix .
 
 test: 
-	@poetry run pytest . --cov=. --cov-report=
+	@poetry run pytest . --cov --cov-report=term-missing
 
 test-coverage:
-	@poetry run pytest --cov-report=term-missing  --cov=.
+	@poetry run pytest --cov-report=term-missing  --cov
 
-.PHONY: check clear_cache fix 
+.PHONY: check clear_cache fix test test-coverage

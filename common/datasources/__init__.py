@@ -14,4 +14,4 @@ def auto_import_datasource_schemas():
             importlib.import_module(module_name)
 
 
-auto_import_datasource_schemas()
+# auto_import_datasource_schemas()

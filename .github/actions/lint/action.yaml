@@ -1,0 +1,42 @@
+name: Lint
+description: Setup Python + Poetry and run lint
+
+inputs:
+  python-version:
+    required: true
+  poetry-version:
+    required: true
+
+runs: 
+  using: composite 
+  steps: 
+    - uses: actions/setup-python@v5
+      with: 
+        python-version: ${{ inputs.python-version }}
+
+    - name: Setup Poetry
+      uses: abatilo/actions-poetry@v3
+      with: 
+        poetry-version: ${{ inputs.poetry-version }}
+
+    - name: Configure Poetry
+      shell: bash
+      run: poetry config virtualenvs.in-project true
+    
+    - name: Cache Poetry 
+      uses: actions/cache@v3
+      with:
+        path: | 
+          ~/.cache/pypoetry
+          ~/.cache/pip 
+          .venv 
+        key: poetry-${{ runner.os }}-${{ inputs.python-version }}-${{ inputs.poetry-version }}-${{ hashFiles('poetry.lock') }}
+        
+    - name: Install dependencies
+      shell: bash
+      run: | 
+        poetry install --only test --no-interaction --no-ansi
+    
+    - name: Check Linting
+      shell: bash
+      run: make check
