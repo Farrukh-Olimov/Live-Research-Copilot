@@ -59,7 +59,7 @@ omit = [
   "*/__pycache__/*",
   "*/alembic/*",
   "*/base*.py",
-  "./common/datasources/arxiv/*.py",
+  "./common/datasources/arxiv/*.py"
 ]
 
 [tool.poetry]

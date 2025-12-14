@@ -1,5 +1,3 @@
-
-
 # def test_base_category_fetcher():
 #     """Test the BaseCategoryFetcher class.
 
