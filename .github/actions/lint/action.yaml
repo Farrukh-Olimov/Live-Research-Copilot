@@ -20,6 +20,7 @@ runs:
         poetry-version: ${{ inputs.poetry-version }}
 
     - name: Configure Poetry
+      shell: bash
       run: poetry config virtualenvs.in-project true
     
     - name: Cache Poetry 
@@ -32,8 +33,10 @@ runs:
         key: poetry-${{ runner.os }}-${{ inputs.python-version }}-${{ inputs.poetry-version }}-${{ hashFiles('poetry.lock') }}
         
     - name: Install dependencies
+      shell: bash
       run: | 
         poetry install --only test --no-interaction --no-ansi
     
     - name: Check Linting
+      shell: bash
       run: make check
