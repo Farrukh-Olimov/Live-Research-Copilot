@@ -26,7 +26,7 @@ runs:
     - name: Install dependencies
       shell: bash
       run: | 
-        poetry install --only test --no-interaction --no-ansi
+        poetry install --with test --no-interaction --no-ansi
     
     - name: Run Tests
       shell: bash
