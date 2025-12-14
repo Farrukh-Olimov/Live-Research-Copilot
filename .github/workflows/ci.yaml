@@ -2,12 +2,6 @@ name: CI
 
 on: [push, pull_request]
 
-# Define shared variables
-env: 
-  PYTHON_VERSIONS: '["3.12"]'
-  POETRY_VERSIONS: '["2.2.1"]'
-  OS: '["ubuntu-24.04", "ubuntu-22.04"]'
-
 
 jobs: 
   lint: 
@@ -15,9 +9,9 @@ jobs:
       fail-fast: false
       max-parallel: 1
       matrix: 
-        python-version:  ${{ fromJSON(env.PYTHON_VERSIONS) }}
-        poetry-version: ${{ fromJSON(env.POETRY_VERSIONS) }}
-        os: ${{ fromJSON(env.OS) }}
+        python-version:  ${{ fromJSON(vars.PYTHON_VERSIONS) }}
+        poetry-version: ${{ fromJSON(vars.POETRY_VERSIONS) }}
+        os: ${{ fromJSON(vars.OS) }}
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -32,9 +26,9 @@ jobs:
       fail-fast: false
       max-parallel: 1
       matrix: 
-        python-version:  ${{ fromJSON(env.PYTHON_VERSIONS) }}
-        poetry-version: ${{ fromJSON(env.POETRY_VERSIONS) }}
-        os: ${{ fromJSON(env.OS) }}
+        python-version:  ${{ fromJSON(vars.PYTHON_VERSIONS) }}
+        poetry-version: ${{ fromJSON(vars.POETRY_VERSIONS) }}
+        os: ${{ fromJSON(vars.OS) }}
     runs-on: ${{ matrix.os }}
     steps: 
       - uses: ./github/actions/test
