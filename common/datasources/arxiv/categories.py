@@ -76,7 +76,7 @@ class ArxivCategoryFetcher(CategoryFetcher):
 
         domain_code = set_spec.split(":")[0]
         domain = domains.get(domain_code, None)
-        if domain is None:
+        if domain is None:  # pragma: no cover
             logger.warning(
                 "Skipping subject with missing domain",
                 extra={
@@ -91,19 +91,7 @@ class ArxivCategoryFetcher(CategoryFetcher):
 
 
 # if __name__ == "__main__":
-#     import asyncio
 
-#     from common.utils.logger.constants import LogLevel
-#     from common.utils.logger.rotation import RotationType
-
-#     # Configure logger (do this once at application startup)
-#     LoggerManager.configure(
-#         level=LogLevel.DEBUG,
-#         rotation_type=RotationType.TIME,
-#         console_colors=True,
-#         structured_format=False,
-#         sanitize_sensitive=True,
-#     )
 
 #     async def main():
 #         client = httpx.AsyncClient(
@@ -119,9 +107,3 @@ class ArxivCategoryFetcher(CategoryFetcher):
 #             ),
 #             headers={"User-Agent": "ResearchCopilot/1.0"},
 #         )
-
-#         fetcher = ArxivCategoryFetcher(client)
-#         async for subject in fetcher.fetch_subjects():
-#             print(subject)
-
-#     asyncio.run(main())
