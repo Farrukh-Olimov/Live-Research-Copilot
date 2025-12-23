@@ -42,3 +42,7 @@ class DomainRepository(BaseRepository[Domain]):
         query = select(Domain).filter(Domain.code.in_(codes))
         rows = await self.session.execute(query)
         return rows.scalars().all()
+
+    async def delete_domain(self, domain: Domain):
+        """Deletes a domain."""
+        await self.session.delete(domain)

@@ -39,3 +39,7 @@ class SubjectRepository(BaseRepository[Subject]):
         query = select(Subject).filter(Subject.code.in_(codes))
         rows = await self.session.execute(query)
         return rows.scalars().all()
+
+    async def delete_subject(self, subject: Subject):
+        """Deletes a subject."""
+        await self.session.delete(subject)

@@ -100,3 +100,31 @@ class CategoryIngestionService:
 
             if new_subjects:
                 await self.subject_repository.create_many(new_subjects)
+
+    async def delete_subject(self, subject: SubjectSchema):
+        """Removes only a subject from the database.
+
+        Args:
+            subject (SubjectSchema): The subject to remove.
+
+        Returns:
+            None
+        """
+        async with self.session.begin():
+            subject = await self.subject_repository.get_by_code(subject.code)
+            await self.subject_repository.delete_subject(subject=subject)
+
+    async def delete_subject_and_domain(self, subject: SubjectSchema):
+        """Removes a subject and its domain from the database.
+
+        Args:
+            subject (SubjectSchema): The subject to remove.
+
+        Returns:
+            None
+        """
+        async with self.session.begin():
+            subject = await self.subject_repository.get_by_code(subject.code)
+            domain = await self.domain_repository.get_by_code(subject.domain.code)
+            await self.subject_repository.delete_subject(subject=subject)
+            await self.domain_repository.delete_domain(domain=domain)
