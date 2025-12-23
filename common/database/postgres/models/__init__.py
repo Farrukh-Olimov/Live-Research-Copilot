@@ -2,14 +2,17 @@ from .author import Author
 from .base import BaseModel
 from .domain import Domain
 from .paper import Paper
-from .relationships import paper_authors
+from .relationships import paper_authors, paper_subject
 from .source import Source
+from .subject import Subject
 
 __all__ = [
-    "BaseModel",
-    "Paper",
     "Author",
-    "paper_authors",
+    "BaseModel",
     "Domain",
+    "Paper",
     "Source",
+    "Subject",
+    "paper_authors",
+    "paper_subject",
 ]
