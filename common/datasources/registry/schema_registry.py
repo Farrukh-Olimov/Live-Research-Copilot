@@ -2,21 +2,21 @@ from logging import getLogger
 from threading import Lock
 from typing import Dict, List, Type
 
-from .schema import BasePaperSchema
+from ..schema import BasePaperSchema
 
 logger = getLogger(__name__)
 
 
-class DatasourceSchemas:
+class DatasourceSchemaRegistry:
     _registry: Dict[str, Type[BasePaperSchema]] = {}
     _lock: Lock = Lock()
 
     @classmethod
-    def get_schema(cls, source_name: str) -> Type[BasePaperSchema]:
+    def get_schema(cls, datasource_name: str) -> Type[BasePaperSchema]:
         """Retrieves a schema class from the datasource registry.
 
         Args:
-            source_name (str): The name of the datasource to retrieve the schema for.
+            datasource_name (str): The name of the datasource to retrieve.
 
         Returns:
             Type[BasePaperSchema]: The schema class associated with the
@@ -25,11 +25,11 @@ class DatasourceSchemas:
         Raises:
             ValueError: If the schema is not found in the registry.
         """
-        source_name = source_name.lower()
-        if source_name not in cls._registry:
-            raise KeyError(f"Schema not found: {source_name}")
-        logger.debug("Retrieved schema", extra={"schema": source_name})
-        return cls._registry[source_name]
+        datasource_name = datasource_name.lower()
+        if datasource_name not in cls._registry:
+            raise KeyError(f"Schema not found: {datasource_name}")
+        logger.debug("Retrieved schema", extra={"schema": datasource_name})
+        return cls._registry[datasource_name]
 
     @classmethod
     def list_schemas(cls) -> List[str]:
@@ -50,29 +50,29 @@ class DatasourceSchemas:
         Notes:
             This method is thread-safe.
         """
-        source_name = schema_cls.source_name.lower()
-        if source_name not in cls._registry:
+        datasource_name = schema_cls.DATASOURCE_NAME.lower()
+        if datasource_name not in cls._registry:
             with cls._lock:
-                if source_name not in cls._registry:  # pragma: no cover
-                    cls._registry[source_name] = schema_cls
-                    logger.debug("Registered schema", extra={"schema": source_name})
+                if datasource_name not in cls._registry:  # pragma: no cover
+                    cls._registry[datasource_name] = schema_cls
+                    logger.debug("Registered schema", extra={"schema": datasource_name})
         return schema_cls
 
     @classmethod
-    def unregister(cls, source_name: str):
+    def unregister(cls, datasource_name: str):
         """Unregisters a schema class from the datasource registry.
 
         Args:
-            source_name (str): The name of the datasource to unregister.
+            datasource_name (str): The name of the datasource to unregister.
 
         Raises:
             KeyError: If the schema is not found in the registry.
         """
-        if source_name in cls._registry:
+        if datasource_name in cls._registry:
             with cls._lock:
-                cls._registry.pop(source_name)
+                cls._registry.pop(datasource_name)
         else:
-            raise KeyError(f"Schema not found: {source_name}") from None
+            raise KeyError(f"Schema not found: {datasource_name}") from None
 
     @classmethod
     def clear(cls):

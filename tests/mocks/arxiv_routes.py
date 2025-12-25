@@ -3,7 +3,7 @@ from functools import lru_cache
 import httpx
 
 from common.constants.path import APP_ROOT
-from common.datasources.arxiv.categories import ArxivCategoryFetcher
+from common.datasources.arxiv.category_fetcher import ArxivCategoryFetcher
 from tests.helpers.load_data import load_text_file
 
 DATA_DIR = APP_ROOT.joinpath("tests", "data", "common", "datasources", "arxiv")

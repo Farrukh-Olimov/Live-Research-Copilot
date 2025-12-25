@@ -1,18 +1,24 @@
-from typing import AsyncIterable, Dict, Optional
+from typing import AsyncIterable, ClassVar, Dict, Optional
 import xml.etree.ElementTree as ET
 
 from common.datasources.base import CategoryFetcher
+from common.datasources.registry.category_fetcher_registry import (
+    CategoryFetcherRegistry,
+)
 from common.datasources.schema import DomainSchema, SubjectSchema
 from common.utils.logger.logger_config import LoggerManager
 
 logger = LoggerManager.get_logger(__name__)
 
 
+@CategoryFetcherRegistry.register
 class ArxivCategoryFetcher(CategoryFetcher):
     URL = "https://oaipmh.arxiv.org/oai"
     NAMESPACE = {"oai": "http://www.openarchives.org/OAI/2.0/"}
     PARAMS = {"verb": "ListSets"}
     TIMEOUT = 30
+
+    DATASOURCE_NAME: ClassVar[str] = "arxiv"
 
     async def fetch_subjects(self) -> AsyncIterable[SubjectSchema]:
         """Fetches all subjects supported by the arXiv datasource.

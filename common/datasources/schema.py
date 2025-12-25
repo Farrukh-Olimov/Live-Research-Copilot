@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 
 class BasePaperSchema(BaseModel):
-    source_name: ClassVar[str]
+    DATASOURCE_NAME: ClassVar[str] = NotImplemented
 
 
 class DomainSchema(BaseModel):
