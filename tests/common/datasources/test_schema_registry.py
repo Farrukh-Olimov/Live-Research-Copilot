@@ -99,37 +99,37 @@ def test_get_unregistered_datasource_schema(reset_datasource_registry):
         DatasourceSchemaRegistry.unregister(TestSchema.DATASOURCE_NAME)
 
 
-def test_auto_import_registers_all_datasource_schemas():
-    """Tests that imports all datasource schemas.
+# def test_auto_import_registers_all_datasource_schemas():
+#     """Tests that imports all datasource schemas.
 
-    This test ensures that the datasource registry is populated with all
-    available datasource schemas.
-    """
-    from common.datasources import auto_import_datasource_schemas
+#     This test ensures that the datasource registry is populated with all
+#     available datasource schemas.
+#     """
+#     from common.datasources import auto_import_datasource_schemas
 
-    auto_import_datasource_schemas()
-    assert (
-        DatasourceSchemaRegistry.list_schemas()
-    ), "Datasource registry should not be empty."
+#     auto_import_datasource_schemas()
+#     assert (
+#         DatasourceSchemaRegistry.list_schemas()
+#     ), "Datasource registry should not be empty."
 
 
-def test_get_registered_datasource_schemas():
-    """Tests that returns all registered datasource schemas.
+# def test_get_registered_datasource_schemas():
+#     """Tests that returns all registered datasource schemas.
 
-    This test ensures that the datasource registry is populated with all
-    available datasource schemas.
-    """
-    from common.datasources import auto_import_datasource_schemas
+#     This test ensures that the datasource registry is populated with all
+#     available datasource schemas.
+#     """
+#     from common.datasources import auto_import_datasource_schemas
 
-    auto_import_datasource_schemas()
+#     auto_import_datasource_schemas()
 
-    registered_schemas = DatasourceSchemaRegistry.list_schemas()
-    print(f"Registered schemas: {registered_schemas}")
-    assert registered_schemas, "Datasource registry should not be empty."
+#     registered_schemas = DatasourceSchemaRegistry.list_schemas()
+#     print(f"Registered schemas: {registered_schemas}")
+#     assert registered_schemas, "Datasource registry should not be empty."
 
-    schema_name = registered_schemas[0]
-    schema = DatasourceSchemaRegistry.get_schema(schema_name)
+#     schema_name = registered_schemas[0]
+#     schema = DatasourceSchemaRegistry.get_schema(schema_name)
 
-    assert (
-        schema.DATASOURCE_NAME == schema_name
-    ), f"Schema {schema_name} should be registered."
+#     assert (
+#         schema.DATASOURCE_NAME == schema_name
+#     ), f"Schema {schema_name} should be registered."

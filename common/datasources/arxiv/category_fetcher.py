@@ -13,12 +13,12 @@ logger = LoggerManager.get_logger(__name__)
 
 @CategoryFetcherRegistry.register
 class ArxivCategoryFetcher(CategoryFetcher):
-    URL = "https://oaipmh.arxiv.org/oai"
+    DATASOURCE_NAME: ClassVar[str] = "arxiv"
+
     NAMESPACE = {"oai": "http://www.openarchives.org/OAI/2.0/"}
     PARAMS = {"verb": "ListSets"}
     TIMEOUT = 30
-
-    DATASOURCE_NAME: ClassVar[str] = "arxiv"
+    URL = "https://oaipmh.arxiv.org/oai"
 
     async def fetch_subjects(self) -> AsyncIterable[SubjectSchema]:
         """Fetches all subjects supported by the arXiv datasource.
@@ -55,13 +55,12 @@ class ArxivCategoryFetcher(CategoryFetcher):
             extra={
                 "domains": len(all_domains),
                 "subjects": subject_counts,
-                "source": "arxiv",
             },
         )
 
     @staticmethod
     def _parse_set(
-        set_spec, set_name, domains: Dict[str, DomainSchema]
+        set_spec: str, set_name: str, domains: Dict[str, DomainSchema]
     ) -> Optional[SubjectSchema]:
         """Parse a single set specification from arXiv into a SubjectSchema object.
 
@@ -89,7 +88,6 @@ class ArxivCategoryFetcher(CategoryFetcher):
                     "domain_code": domain_code,
                     "subject_code": set_spec,
                     "subject_name": set_name,
-                    "source": "arxiv",
                 },
             )
             return None

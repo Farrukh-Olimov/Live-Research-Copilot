@@ -3,7 +3,7 @@ from functools import lru_cache
 import httpx
 
 from common.constants.path import APP_ROOT
-from common.datasources.arxiv.category_fetcher import ArxivCategoryFetcher
+from common.datasources.arxiv import ArxivCategoryFetcher, ArxivPaperMetadataFetcher
 from tests.helpers.load_data import load_text_file
 
 DATA_DIR = APP_ROOT.joinpath("tests", "data", "common", "datasources", "arxiv")
@@ -23,9 +23,21 @@ def load_response(filepath: str):
     the contents of the file are only loaded once and then cached.
     """
     extension = filepath.split(".")[-1]
-    if extension in ["txt"]:
+    if extension in ["txt", "xml"]:
         return load_text_file(DATA_DIR.joinpath(filepath))
     raise NotImplementedError(f"Loading {extension} not implemented")
+
+
+def dict_to_url_params(params: dict):
+    """Convert a dictionary of parameters to a URL parameter string.
+
+    Parameters:
+        params (dict): A dictionary of parameters to convert.
+
+    Returns:
+        str: A string of URL parameters.
+    """
+    return "&".join([f"{k}={v}" for k, v in params.items()])
 
 
 def lazy_arxiv_router():
@@ -40,13 +52,30 @@ def lazy_arxiv_router():
 
     async def handler(request: httpx.Request) -> httpx.Response:
         """Mock handler function for arXiv routes."""
-        params = dict(request.url.params)
+        request_params = dict(request.url.params)
+        request_params = dict_to_url_params(request_params)
 
-        param = next(iter(ArxivCategoryFetcher.PARAMS))
-        if param in params:
+        param = dict_to_url_params(ArxivCategoryFetcher.PARAMS)
+        if param in request_params:
             return httpx.Response(
                 200,
                 text=load_response(DATA_DIR.joinpath("category.txt").as_posix()),
+            )
+
+        param = dict_to_url_params(ArxivPaperMetadataFetcher.PARAMS)
+        if param in request_params and "resumptionToken" not in request_params:
+            return httpx.Response(
+                200,
+                text=load_response(
+                    DATA_DIR.joinpath("arxiv_paper_metadata_page_1.xml").as_posix()
+                ),
+            )
+        elif param in request_params and "resumptionToken" in request_params:
+            return httpx.Response(
+                200,
+                text=load_response(
+                    DATA_DIR.joinpath("arxiv_paper_metadata_page_2.xml").as_posix()
+                ),
             )
 
         raise NotImplementedError(

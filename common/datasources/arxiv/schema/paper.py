@@ -20,7 +20,7 @@ class ArxivPaperSchema(BasePaperSchema):
         description="Primary subject within the domain (e.g., AI, CV, NLP)"
     )
     publish_date: str = Field(description="Date of publication")
-    secondary_subject: Optional[str] = Field(
+    secondary_subjects: Optional[List[str]] = Field(
         description="Secondary subject within the domain"
     )
     title: str = Field(description="Title of the paper")

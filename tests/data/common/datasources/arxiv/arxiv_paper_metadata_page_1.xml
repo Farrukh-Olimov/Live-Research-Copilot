@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OAI-PMH
+	xmlns="http://www.openarchives.org/OAI/2.0/"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
+	<responseDate>2026-01-16T13:41:59Z</responseDate>
+	<request verb="ListRecords" metadataPrefix="oai_dc" from="2024-12-16" until="2025-12-01" set="cs:cs:AI">http://oaipmh.arxiv.org/oai</request>
+	<ListRecords>
+		<record>
+			<header>
+				<identifier>oai:arXiv.org:2411.17309</identifier>
+				<datestamp>2024-12-01</datestamp>
+				<setSpec>cs:cs:AR</setSpec>
+				<setSpec>cs:cs:AI</setSpec>
+				<setSpec>cs:cs:DC</setSpec>
+				<setSpec>cs:cs:ET</setSpec>
+			</header>
+			<metadata>
+				<oai_dc:dc
+					xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/"
+					xmlns:dc="http://purl.org/dc/elements/1.1/"
+					xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ https://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+					<dc:title>PIM-AI: A Novel Architecture for High-Efficiency LLM Inference</dc:title>
+					<dc:creator>Ortega, Cristobal</dc:creator>
+					<dc:creator>Falevoz, Yann</dc:creator>
+					<dc:creator>Ayrignac, Renaud</dc:creator>
+					<dc:subject>Hardware Architecture</dc:subject>
+					<dc:subject>Artificial Intelligence</dc:subject>
+					<dc:subject>Distributed, Parallel, and Cluster Computing</dc:subject>
+					<dc:subject>Emerging Technologies</dc:subject>
+					<dc:description>Large Language Models (LLMs) have become essential in a variety of applications due to their advanced language understanding and generation capabilities. However, their computational and memory requirements pose significant challenges to traditional hardware architectures. Processing-in-Memory (PIM), which integrates computational units directly into memory chips, offers several advantages for LLM inference, including reduced data transfer bottlenecks and improved power efficiency.
+  This paper introduces PIM-AI, a novel DDR5/LPDDR5 PIM architecture designed for LLM inference without modifying the memory controller or DDR/LPDDR memory PHY. We have developed a simulator to evaluate the performance of PIM-AI in various scenarios and demonstrate its significant advantages over conventional architectures. In cloud-based scenarios, PIM-AI reduces the 3-year TCO per queries-per-second by up to 6.94x compared to state-of-the-art GPUs, depending on the LLM model used. In mobile scenarios, PIM-AI achieves a 10- to 20-fold reduction in energy per token compared to state-of-the-art mobile SoCs, resulting in 25 to 45~\% more queries per second and 6.9x to 13.4x less energy per query, extending battery life and enabling more inferences per charge. These results highlight PIM-AI&#39;s potential to revolutionize LLM deployments, making them more efficient, scalable, and sustainable. </dc:description>
+					<dc:description>14 pages, 5 figures</dc:description>
+					<dc:date>2024-11-26</dc:date>
+					<dc:type>text</dc:type>
+					<dc:identifier>http://arxiv.org/abs/2411.17309</dc:identifier>
+				</oai_dc:dc>
+			</metadata>
+		</record>
+		<record>
+			<header>
+				<identifier>oai:arXiv.org:2105.02653</identifier>
+				<datestamp>2024-12-02</datestamp>
+				<setSpec>cs:cs:LG</setSpec>
+				<setSpec>cs:cs:AI</setSpec>
+			</header>
+			<metadata>
+				<oai_dc:dc
+					xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/"
+					xmlns:dc="http://purl.org/dc/elements/1.1/"
+					xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ https://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+					<dc:title>Regularizing Explanations in Bayesian Convolutional Neural Networks</dc:title>
+					<dc:creator>Bekkemoen, Yanzhe</dc:creator>
+					<dc:creator>Langseth, Helge</dc:creator>
+					<dc:subject>Machine Learning</dc:subject>
+					<dc:subject>Artificial Intelligence</dc:subject>
+					<dc:description>Neural networks are powerful function approximators with tremendous potential in learning complex distributions. However, they are prone to overfitting on spurious patterns. Bayesian inference provides a principled way to regularize neural networks and give well-calibrated uncertainty estimates. It allows us to specify prior knowledge on weights. However, specifying domain knowledge via distributions over weights is infeasible. Furthermore, it is unable to correct models when they focus on spurious or irrelevant features. New methods within explainable artificial intelligence allow us to regularize explanations in the form of feature importance to add domain knowledge and correct the models&#39; focus. Nevertheless, they are incompatible with Bayesian neural networks, as they require us to modify the loss function. We propose a new explanation regularization method that is compatible with Bayesian inference. Consequently, we can quantify uncertainty and, at the same time, have correct explanations. We test our method using four different datasets. The results show that our method improves predictive performance when models overfit on spurious features or are uncertain of which features to focus on. Moreover, our method performs better than augmenting training data with samples where spurious features are removed through masking. We provide code, data, trained weights, and hyperparameters. </dc:description>
+					<dc:date>2021-04-29</dc:date>
+					<dc:date>2024-11-27</dc:date>
+					<dc:type>text</dc:type>
+					<dc:identifier>http://arxiv.org/abs/2105.02653</dc:identifier>
+				</oai_dc:dc>
+			</metadata>
+		</record>
+		<resumptionToken expirationDate='2026-01-17T00:00:00Z'>verb%3DListRecords%26metadataPrefix%3Doai_dc%26from%3D2024-12-16%26until%3D2025-12-01%26set%3Dcs%253Acs%253AAI%26skip%3D16</resumptionToken>
+	</ListRecords>
+</OAI-PMH>

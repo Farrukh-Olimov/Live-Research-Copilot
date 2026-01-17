@@ -1,10 +1,12 @@
 from logging import getLogger
 from threading import Lock
-from typing import Dict, List, Type
+from typing import Dict, List, Type, TypeVar
 
 from ..schema import BasePaperSchema
 
 logger = getLogger(__name__)
+
+GenericSchemaType = TypeVar("GenericSchemaType", bound=BasePaperSchema)
 
 
 class DatasourceSchemaRegistry:
@@ -41,11 +43,11 @@ class DatasourceSchemaRegistry:
         return list(cls._registry.keys())
 
     @classmethod
-    def register(cls, schema_cls: Type[BasePaperSchema]):
+    def register(cls, schema_cls: GenericSchemaType) -> GenericSchemaType:
         """Registers a schema class with the datasource registry.
 
         Args:
-            schema_cls (Type[BasePaperSchema]): The schema class to register.
+            schema_cls (GenericSchemaType): The schema class to register.
 
         Notes:
             This method is thread-safe.

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OAI-PMH
+	xmlns="http://www.openarchives.org/OAI/2.0/"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
+	<responseDate>2026-01-16T13:41:59Z</responseDate>
+	<request verb="ListRecords" metadataPrefix="oai_dc" from="2024-12-16" until="2025-12-01" set="cs:cs:AI">http://oaipmh.arxiv.org/oai</request>
+	<ListRecords>
+		<record>
+			<header>
+				<identifier>oai:arXiv.org:2203.00812</identifier>
+				<datestamp>2024-12-02</datestamp>
+				<setSpec>cs:cs:DB</setSpec>
+				<setSpec>cs:cs:AI</setSpec>
+			</header>
+			<metadata>
+				<oai_dc:dc
+					xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/"
+					xmlns:dc="http://purl.org/dc/elements/1.1/"
+					xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ https://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+					<dc:title>Efficient Dynamic Clustering: Capturing Patterns from Historical Cluster Evolution</dc:title>
+					<dc:creator>Gu, Binbin</dc:creator>
+					<dc:creator>Kargar, Saeed</dc:creator>
+					<dc:creator>Nawab, Faisal</dc:creator>
+					<dc:subject>Databases</dc:subject>
+					<dc:subject>Artificial Intelligence</dc:subject>
+					<dc:description>Clustering aims to group unlabeled objects based on similarity inherent among them into clusters. It is important for many tasks such as anomaly detection, database sharding, record linkage, and others. Some clustering methods are taken as batch algorithms that incur a high overhead as they cluster all the objects in the database from scratch or assume an incremental workload. In practice, database objects are updated, added, and removed from databases continuously which makes previous results stale. Running batch algorithms is infeasible in such scenarios as it would incur a significant overhead if performed continuously. This is particularly the case for high-velocity scenarios such as ones in Internet of Things applications.
+  In this paper, we tackle the problem of clustering in high-velocity dynamic scenarios, where the objects are continuously updated, inserted, and deleted. Specifically, we propose a generally dynamic approach to clustering that utilizes previous clustering results. Our system, DynamicC, uses a machine learning model that is augmented with an existing batch algorithm. The DynamicC model trains by observing the clustering decisions made by the batch algorithm. After training, the DynamicC model is usedin cooperation with the batch algorithm to achieve both accurate and fast clustering decisions. The experimental results on four real-world and one synthetic datasets show that our approach has a better performance compared to the state-of-the-art method while achieving similarly accurate clustering results to the baseline batch algorithm. </dc:description>
+					<dc:date>2022-03-02</dc:date>
+					<dc:date>2022-03-07</dc:date>
+					<dc:type>text</dc:type>
+					<dc:identifier>http://arxiv.org/abs/2203.00812</dc:identifier>
+					<dc:identifier>Proceedings of EDBT, 2022, pp. 351-363</dc:identifier>
+					<dc:identifier>doi:10.48786/EDBT.2022.21</dc:identifier>
+				</oai_dc:dc>
+			</metadata>
+		</record>
+		<record>
+			<header>
+				<identifier>oai:arXiv.org:2211.14077</identifier>
+				<datestamp>2024-12-02</datestamp>
+				<setSpec>cs:cs:LG</setSpec>
+				<setSpec>cs:cs:AI</setSpec>
+			</header>
+			<metadata>
+				<oai_dc:dc
+					xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/"
+					xmlns:dc="http://purl.org/dc/elements/1.1/"
+					xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ https://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+					<dc:title>Detecting broken Absorber Tubes in CSP plants using intelligent sampling and dual loss</dc:title>
+					<dc:creator>Pérez-Cutiño, Miguel Angel</dc:creator>
+					<dc:creator>Valverde, Juan Sebastián</dc:creator>
+					<dc:creator>Díaz-Báñez, José Miguel</dc:creator>
+					<dc:subject>Machine Learning</dc:subject>
+					<dc:subject>Artificial Intelligence</dc:subject>
+					<dc:description>Concentrated solar power (CSP) is one of the growing technologies that is leading the process of changing from fossil fuels to renewable energies. The sophistication and size of the systems require an increase in maintenance tasks to ensure reliability, availability, maintainability and safety. Currently, automatic fault detection in CSP plants using Parabolic Trough Collector systems evidences two main drawbacks: 1) the devices in use needs to be manually placed near the receiver tube, 2) the Machine Learning-based solutions are not tested in real plants. We address both gaps by combining the data extracted with the use of an Unmaned Aerial Vehicle, and the data provided by sensors placed within 7 real plants. The resulting dataset is the first one of this type and can help to standardize research activities for the problem of fault detection in this type of plants. Our work proposes supervised machine-learning algorithms for detecting broken envelopes of the absorber tubes in CSP plants. The proposed solution takes the class imbalance problem into account, boosting the accuracy of the algorithms for the minority class without harming the overall performance of the models. For a Deep Residual Network, we solve an imbalance and a balance problem at the same time, which increases by 5% the Recall of the minority class with no harm to the F1-score. Additionally, the Random Under Sampling technique boost the performance of traditional Machine Learning models, being the Histogram Gradient Boost Classifier the algorithm with the highest increase (3%) in the F1-Score. To the best of our knowledge, this paper is the first providing an automated solution to this problem using data from operating plants. </dc:description>
+					<dc:date>2022-11-25</dc:date>
+					<dc:type>text</dc:type>
+					<dc:identifier>http://arxiv.org/abs/2211.14077</dc:identifier>
+					<dc:identifier>doi:10.1007/s10489-023-05093-3</dc:identifier>
+				</oai_dc:dc>
+			</metadata>
+		</record>
+	</ListRecords>
+</OAI-PMH>

@@ -1,10 +1,12 @@
 from logging import getLogger
 from threading import Lock
-from typing import Dict, List, Type
+from typing import Dict, List, Type, TypeVar
 
 from ..base import CategoryFetcher
 
 logger = getLogger(__name__)
+
+GenericCategoryFetcherType = TypeVar("CategoryFetcherType", bound=CategoryFetcher)
 
 
 class CategoryFetcherRegistry:
@@ -42,11 +44,14 @@ class CategoryFetcherRegistry:
         return list(cls._registry.keys())
 
     @classmethod
-    def register(cls, schema_cls: Type[CategoryFetcher]):
+    def register(
+        cls, schema_cls: GenericCategoryFetcherType
+    ) -> GenericCategoryFetcherType:
         """Registers a schema class with the datasource registry.
 
         Args:
-            schema_cls (Type[BasePaperSchema]): The category fetcher class to register.
+            schema_cls (GenericCategoryFetcherType): The category fetcher
+                class to register.
 
         Notes:
             This method is thread-safe.
