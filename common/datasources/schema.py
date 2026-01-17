@@ -1,4 +1,4 @@
-from typing import ClassVar
+from typing import ClassVar, List
 
 from pydantic import BaseModel, Field
 
@@ -16,3 +16,17 @@ class SubjectSchema(BaseModel):
     code: str = Field(description="Subject code")
     name: str = Field(description="Subject name")
     domain: DomainSchema = Field(description="Domain of the subject")
+
+
+class PaperMetadataRecord(BaseModel):
+    abstract: str = Field(description="Abstract of the paper")
+    authors: List[str] = Field(description="Authors of the paper")
+    domain: str = Field(description="High-level academic domain")
+    paper_id: str = Field(description="Paper ID")
+    primary_subject: str = Field(description="Primary subject within the domain")
+    publish_date: str = Field(description="Date of publication")
+    secondary_subjects: List[str] = Field(
+        description=" Secondary subjects within the domains"
+    )
+    source: str = Field(description="Source of the paper")
+    title: str = Field(description="Title of the paper")

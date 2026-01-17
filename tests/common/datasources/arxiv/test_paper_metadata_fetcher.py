@@ -3,8 +3,8 @@ from typing import List
 
 import pytest
 
-from common.datasources.arxiv import ArxivPaperMetadataFetcher
-from common.datasources.arxiv.schema import ArxivPaperSchema
+from common.datasources.arxiv import ArxivPaperMetadataFetcher, ArxivPaperParser
+from common.datasources.arxiv.schema import ArxivPaperMetadataRecord
 
 
 @pytest.mark.asyncio
@@ -13,7 +13,9 @@ async def test_arxiv_paper_metadata_fetcher(httpx_async_client):
     fromTime = datetime(2022, 1, 1)
     untilTime = datetime(2022, 1, 1)
 
-    fetcher = ArxivPaperMetadataFetcher(client=httpx_async_client)
+    fetcher = ArxivPaperMetadataFetcher(
+        client=httpx_async_client, paper_parser=ArxivPaperParser()
+    )
 
     async for records in fetcher.fetch_paper_metadata(
         subject_code="cs", from_date=fromTime, until_date=untilTime
@@ -28,8 +30,10 @@ async def test_arxiv_paper_metadata_fetcher_resumptionToken(httpx_async_client):
     fromTime = datetime(2022, 1, 1)
     untilTime = datetime(2022, 1, 1)
 
-    fetcher = ArxivPaperMetadataFetcher(client=httpx_async_client)
-    all_records: List[ArxivPaperSchema] = []
+    fetcher = ArxivPaperMetadataFetcher(
+        client=httpx_async_client, paper_parser=ArxivPaperParser()
+    )
+    all_records: List[ArxivPaperMetadataRecord] = []
     total_fetched = 0
     async for records in fetcher.fetch_paper_metadata(
         subject_code="cs", from_date=fromTime, until_date=untilTime

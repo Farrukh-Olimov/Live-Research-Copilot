@@ -1,5 +1,5 @@
-from .paper import ArxivPaperSchema
+from .paper import ArxivPaperMetadataRecord
 
 __all__ = [
-    "ArxivPaperSchema",
+    "ArxivPaperMetadataRecord",
 ]

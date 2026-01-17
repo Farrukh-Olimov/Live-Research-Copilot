@@ -1,7 +1,7 @@
 import pytest
 
 from common.datasources.schema import SubjectSchema
-from common.services.category_ingestion import CategoryIngestionService
+from common.services.ingestion.category_ingestion import CategoryIngestionService
 
 
 @pytest.mark.asyncio

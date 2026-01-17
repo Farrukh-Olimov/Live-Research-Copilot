@@ -1,0 +1,27 @@
+from common.datasources.arxiv.schema import ArxivPaperMetadataRecord
+from common.datasources.base import PaperMetadataNormalizer
+from common.datasources.schema import PaperMetadataRecord
+
+
+class ArxivPaperMetadataNormalize(PaperMetadataNormalizer[ArxivPaperMetadataRecord]):
+    def normalize(self, paper_record: ArxivPaperMetadataRecord) -> PaperMetadataRecord:
+        """Normalizes an arXiv paper metadata object into a PaperMetadataRecord.
+
+        Args:
+            paper_record (ArxivPaperMetadataRecord): The arXiv paper metadata
+                object to normalize.
+
+        Returns:
+            PaperMetadataRecord: The normalized paper metadata object.
+        """
+        return PaperMetadataRecord(
+            abstract=paper_record.abstract,
+            authors=paper_record.authors,
+            domain=paper_record.domain,
+            paper_id=paper_record.arxiv_id,
+            primary_subject=paper_record.primary_subject,
+            publish_date=paper_record.publish_date,
+            secondary_subjects=paper_record.secondary_subjects,
+            source=ArxivPaperMetadataRecord.DATASOURCE_NAME,
+            title=paper_record.title,
+        )

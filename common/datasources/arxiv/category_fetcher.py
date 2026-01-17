@@ -1,6 +1,7 @@
 from typing import AsyncIterable, ClassVar, Dict, Optional
 import xml.etree.ElementTree as ET
 
+from common.datasources.arxiv.const import NAMESPACE
 from common.datasources.base import CategoryFetcher
 from common.datasources.registry.category_fetcher_registry import (
     CategoryFetcherRegistry,
@@ -15,7 +16,6 @@ logger = LoggerManager.get_logger(__name__)
 class ArxivCategoryFetcher(CategoryFetcher):
     DATASOURCE_NAME: ClassVar[str] = "arxiv"
 
-    NAMESPACE = {"oai": "http://www.openarchives.org/OAI/2.0/"}
     PARAMS = {"verb": "ListSets"}
     TIMEOUT = 30
     URL = "https://oaipmh.arxiv.org/oai"
@@ -42,9 +42,9 @@ class ArxivCategoryFetcher(CategoryFetcher):
         xml_bytes = await response.aread()
 
         root = ET.fromstring(xml_bytes)
-        for set_el in root.findall(".//oai:set", self.NAMESPACE):
-            set_spec = set_el.find("oai:setSpec", self.NAMESPACE).text.strip().lower()
-            set_name = set_el.find("oai:setName", self.NAMESPACE).text
+        for set_el in root.findall(".//oai:set", NAMESPACE):
+            set_spec = set_el.find("oai:setSpec", NAMESPACE).text.strip().lower()
+            set_name = set_el.find("oai:setName", NAMESPACE).text
             subject = self._parse_set(set_spec, set_name, all_domains)
             if subject:
                 subject_counts += 1

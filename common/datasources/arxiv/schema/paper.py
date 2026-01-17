@@ -7,7 +7,7 @@ from common.datasources.schema import BasePaperSchema
 
 
 @DatasourceSchemaRegistry.register
-class ArxivPaperSchema(BasePaperSchema):
+class ArxivPaperMetadataRecord(BasePaperSchema):
     DATASOURCE_NAME: ClassVar[str] = "arxiv"
 
     abstract: str = Field(description="Abstract of the paper")
