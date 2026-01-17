@@ -7,8 +7,8 @@ def reset_datasource_registry():
 
     This fixture clears the datasource registry before and after each test.
     """
-    from common.datasources.schema_registry import DatasourceSchemas
+    from common.datasources.registry.schema_registry import DatasourceSchemaRegistry
 
-    DatasourceSchemas.clear()
+    DatasourceSchemaRegistry.clear()
     yield
-    DatasourceSchemas.clear()
+    DatasourceSchemaRegistry.clear()

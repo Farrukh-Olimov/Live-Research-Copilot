@@ -2,13 +2,13 @@ from typing import ClassVar, List, Optional
 
 from pydantic import Field
 
+from common.datasources.registry.schema_registry import DatasourceSchemaRegistry
 from common.datasources.schema import BasePaperSchema
-from common.datasources.schema_registry import DatasourceSchemas
 
 
-@DatasourceSchemas.register
+@DatasourceSchemaRegistry.register
 class ArxivPaperSchema(BasePaperSchema):
-    source_name: ClassVar[str] = "arxiv"
+    DATASOURCE_NAME: ClassVar[str] = "arxiv"
 
     abstract: str = Field(description="Abstract of the paper")
     arxiv_id: str = Field(description="Arxiv ID of the paper")
@@ -20,7 +20,7 @@ class ArxivPaperSchema(BasePaperSchema):
         description="Primary subject within the domain (e.g., AI, CV, NLP)"
     )
     publish_date: str = Field(description="Date of publication")
-    secondary_subject: Optional[str] = Field(
+    secondary_subjects: Optional[List[str]] = Field(
         description="Secondary subject within the domain"
     )
     title: str = Field(description="Title of the paper")
