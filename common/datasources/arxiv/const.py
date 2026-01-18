@@ -1,4 +1,6 @@
-DATASOURCE_NAME = "arxiv"
+from common.constants import DataSource
+
+DATASOURCE_NAME = DataSource.ARXIV
 
 NAMESPACE = {
     "dc": "http://purl.org/dc/elements/1.1/",

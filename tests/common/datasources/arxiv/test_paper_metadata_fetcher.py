@@ -17,11 +17,13 @@ async def test_arxiv_paper_metadata_fetcher(httpx_async_client):
         client=httpx_async_client, paper_parser=ArxivPaperParser()
     )
 
-    async for records in fetcher.fetch_paper_metadata(
+    records = []
+    async for record in fetcher.fetch_paper_metadata(
         subject_code="cs", from_date=fromTime, until_date=untilTime
     ):
-        assert len(records) > 0, "Expected at least one record"
+        records.append(record)
         break
+    assert len(records) > 0, "Expected at least one record"
 
 
 @pytest.mark.asyncio
@@ -35,15 +37,14 @@ async def test_arxiv_paper_metadata_fetcher_resumptionToken(httpx_async_client):
     )
     all_records: List[ArxivPaperMetadataRecord] = []
     total_fetched = 0
-    async for records in fetcher.fetch_paper_metadata(
+    async for record in fetcher.fetch_paper_metadata(
         subject_code="cs", from_date=fromTime, until_date=untilTime
     ):
-        assert len(records) > 0, "Expected at least one record"
-        all_records.extend(records)
+        assert record is not None, "Expected a record"
+        all_records.append(record)
         total_fetched += 1
 
-    assert len(all_records) > 0, "Expected at least one record"
-    assert total_fetched > 1, "Expected to fetch more than one page"
+    assert len(all_records) > 1, "Expected at least two records"
 
     seen = set()
     for record in all_records:

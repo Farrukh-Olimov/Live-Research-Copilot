@@ -1,9 +1,9 @@
 # pragma: no cover
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, AsyncIterable, ClassVar, Dict, Generic, Optional, TypeVar
+from typing import Any, AsyncIterable, ClassVar, Dict, Generic, List, Optional, TypeVar
 
-import httpx
+from httpx import AsyncClient
 
 from common.datasources.schema import (
     BasePaperSchema,
@@ -20,7 +20,7 @@ class CategoryFetcher(ABC):
 
     DATASOURCE_NAME: ClassVar[str]
 
-    def __init__(self, client: httpx.AsyncClient):
+    def __init__(self, client: AsyncClient):
         """Initialize the category fetcher.
 
         Args:
@@ -97,7 +97,7 @@ class PaperMetadataFetcher(Generic[PaperSchemaType], ABC):
 
     def __init__(
         self,
-        client: httpx.AsyncClient,
+        client: AsyncClient,
         paper_parser: PaperMetadataParser[PaperSchemaType],
     ):
         """Initialize the category fetcher.
@@ -126,5 +126,38 @@ class PaperMetadataFetcher(Generic[PaperSchemaType], ABC):
         Returns:
             AsyncIterable[PaperSchemaT]: An asynchronous iterable
                 of paper metadata objects.
+        """
+        pass
+
+
+class PaperMetadataIngestion(Generic[PaperSchemaType], ABC):
+    def __init__(
+        self,
+        fetcher: PaperMetadataFetcher[PaperSchemaType],
+        normalizer: PaperMetadataNormalizer[PaperSchemaType],
+    ):
+        """Initializes the paper metadata ingestion process.
+
+        Args:
+            fetcher (PaperMetadataFetcher): The paper metadata fetcher to use.
+            normalizer (PaperMetadataNormalizer): The paper metadata normalizer to use.
+        """
+        self._fetcher = fetcher
+        self._normalizer = normalizer
+
+    @abstractmethod
+    async def run(
+        self, subject: str, from_date: datetime, until_date: datetime
+    ) -> AsyncIterable[List[PaperMetadataRecord]]:
+        """Runs the paper metadata ingestion given subject and date range.
+
+        Args:
+            subject (str): The subject to ingest.
+            from_date (datetime): The from date to ingest.
+            until_date (datetime): The until date to ingest.
+
+        Returns:
+            AsyncIterable[List[PaperMetadataRecord]]: An asynchronous iterable of
+                lists of paper metadata records.
         """
         pass
