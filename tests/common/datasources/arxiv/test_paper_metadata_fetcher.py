@@ -3,7 +3,7 @@ from typing import List
 
 import pytest
 
-from common.datasources.arxiv import ArxivPaperMetadataFetcher, ArxivPaperParser
+from common.datasources.arxiv import ArxivPaperMetadataFetcher, ArxivPaperMetadataParser
 from common.datasources.arxiv.schema import ArxivPaperMetadataRecord
 
 
@@ -14,7 +14,7 @@ async def test_arxiv_paper_metadata_fetcher(httpx_async_client):
     untilTime = datetime(2022, 1, 1)
 
     fetcher = ArxivPaperMetadataFetcher(
-        client=httpx_async_client, paper_parser=ArxivPaperParser()
+        client=httpx_async_client, paper_parser=ArxivPaperMetadataParser()
     )
 
     records = []
@@ -33,7 +33,7 @@ async def test_arxiv_paper_metadata_fetcher_resumptionToken(httpx_async_client):
     untilTime = datetime(2022, 1, 1)
 
     fetcher = ArxivPaperMetadataFetcher(
-        client=httpx_async_client, paper_parser=ArxivPaperParser()
+        client=httpx_async_client, paper_parser=ArxivPaperMetadataParser()
     )
     all_records: List[ArxivPaperMetadataRecord] = []
     total_fetched = 0

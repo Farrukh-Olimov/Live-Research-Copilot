@@ -1,3 +1,4 @@
+from datetime import date
 from typing import ClassVar, List, Optional
 import xml.etree.ElementTree as ET
 
@@ -9,7 +10,7 @@ from common.utils.logger.logger_config import LoggerManager
 logger = LoggerManager.get_logger(__name__)
 
 
-class ArxivPaperParser(PaperMetadataParser[ArxivPaperMetadataRecord]):
+class ArxivPaperMetadataParser(PaperMetadataParser[ArxivPaperMetadataRecord]):
     DATASOURCE_NAME: ClassVar[str] = DATASOURCE_NAME
 
     def parse(
@@ -45,7 +46,7 @@ class ArxivPaperParser(PaperMetadataParser[ArxivPaperMetadataRecord]):
                 authors = self._get_authors(arxiv_el)
                 title = self._get_title(arxiv_el)
                 subjects = self._get_subjects(header, primary_subject_code)
-                publication_date = self._get_date(arxiv_el)
+                publication_date = self._get_publication_date(arxiv_el)
                 records.append(
                     ArxivPaperMetadataRecord(
                         abstract=abstract,
@@ -131,17 +132,20 @@ class ArxivPaperParser(PaperMetadataParser[ArxivPaperMetadataRecord]):
         abstract = arxiv_el.find("dc:description", NAMESPACE).text.strip()
         return abstract
 
-    def _get_date(self, arxiv_el: ET.Element) -> str:
+    def _get_publication_date(self, arxiv_el: ET.Element) -> date:
         """Extracts the date from an arXiv API record element.
+
+        Actually, it is last modified date of the paper.
 
         Args:
             arxiv_el (ET.Element): The element of the arXiv API record.
 
         Returns:
-            str: The date of the record.
+            date: The date of the record.
         """
-        date = arxiv_el.findall("dc:date", NAMESPACE)
-        return date[-1].text.strip()
+        paper_date = arxiv_el.findall("dc:date", NAMESPACE)
+        paper_date = paper_date[-1].text.strip()
+        return date.fromisoformat(paper_date)
 
     def get_resumption_token(self, raw_data: str) -> Optional[str]:
         """Extracts the resumption token from an arXiv API response XML.

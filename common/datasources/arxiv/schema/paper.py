@@ -1,3 +1,4 @@
+from datetime import date
 from typing import ClassVar, List, Optional
 
 from pydantic import Field
@@ -18,7 +19,7 @@ class ArxivPaperMetadataRecord(BasePaperSchema):
     primary_subject: str = Field(
         description="Primary subject within the domain (e.g., AI, CV, NLP)"
     )
-    publish_date: str = Field(description="Date of publication")
+    publish_date: date = Field(description="Date of publication")
     secondary_subjects: Optional[List[str]] = Field(
         description="Secondary subject within the domain"
     )

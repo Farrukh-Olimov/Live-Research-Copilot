@@ -1,10 +1,11 @@
+from datetime import date
 from typing import ClassVar, List
 
 from pydantic import BaseModel, Field
 
 
 class BasePaperSchema(BaseModel):
-    DATASOURCE_NAME: ClassVar[str] = NotImplemented
+    DATASOURCE_NAME: ClassVar[str]
 
 
 class DomainSchema(BaseModel):
@@ -24,7 +25,7 @@ class PaperMetadataRecord(BaseModel):
     domain: str = Field(description="High-level academic domain")
     paper_id: str = Field(description="Paper ID")
     primary_subject: str = Field(description="Primary subject within the domain")
-    publish_date: str = Field(description="Date of publication")
+    publish_date: date = Field(description="Date of publication")
     secondary_subjects: List[str] = Field(
         description=" Secondary subjects within the domains"
     )

@@ -1,12 +1,12 @@
 from datetime import datetime
-from typing import AsyncIterable, ClassVar, List
+from typing import AsyncIterable, ClassVar
 
 from httpx import AsyncClient
 
 from common.datasources.arxiv.const import DATASOURCE_NAME
 from common.datasources.arxiv.paper_metadata_fetcher import ArxivPaperMetadataFetcher
+from common.datasources.arxiv.paper_metadata_parser import ArxivPaperMetadataParser
 from common.datasources.arxiv.paper_normalizer import ArxivPaperMetadataNormalize
-from common.datasources.arxiv.paper_parser import ArxivPaperParser
 from common.datasources.arxiv.schema import ArxivPaperMetadataRecord
 from common.datasources.base import PaperMetadataIngestion, PaperMetadataRecord
 
@@ -20,14 +20,14 @@ class ArxivPaperMetadataIngestion(PaperMetadataIngestion[ArxivPaperMetadataRecor
         Args:
             client (AsyncClient): The httpx client to use for fetching paper metadata.
         """
-        parser = ArxivPaperParser()
+        parser = ArxivPaperMetadataParser()
         normalizer = ArxivPaperMetadataNormalize()
         fetcher = ArxivPaperMetadataFetcher(client, parser)
         super().__init__(fetcher, normalizer)
 
     async def run(
         self, subject: str, from_date: datetime, until_date: datetime
-    ) -> AsyncIterable[List[PaperMetadataRecord]]:
+    ) -> AsyncIterable[PaperMetadataRecord]:
         """Runs the paper metadata ingestion for a given subject and date range.
 
         Args:
@@ -36,12 +36,11 @@ class ArxivPaperMetadataIngestion(PaperMetadataIngestion[ArxivPaperMetadataRecor
             until_date (datetime): The until date to ingest.
 
         Yields:
-            AsyncIterable[List[PaperMetadataRecord]]: An asynchronous iterable
-                of lists of paper metadata records.
+            AsyncIterable[PaperMetadataRecord]: An asynchronous iterable
+                of paper metadata records.
         """
-        async for batch in self._fetcher.fetch_paper_metadata(
+        async for paper in self._fetcher.fetch_paper_metadata(
             subject, from_date, until_date
         ):
-            for paper in batch:
-                normalized_paper_metadata = self._normalizer.normalize(paper)
-                yield normalized_paper_metadata
+            normalized_paper_metadata = self._normalizer.normalize(paper)
+            yield normalized_paper_metadata

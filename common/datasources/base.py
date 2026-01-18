@@ -1,7 +1,7 @@
 # pragma: no cover
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, AsyncIterable, ClassVar, Dict, Generic, List, Optional, TypeVar
+from typing import Any, AsyncIterable, ClassVar, Dict, Generic, Optional, TypeVar
 
 from httpx import AsyncClient
 
@@ -148,7 +148,7 @@ class PaperMetadataIngestion(Generic[PaperSchemaType], ABC):
     @abstractmethod
     async def run(
         self, subject: str, from_date: datetime, until_date: datetime
-    ) -> AsyncIterable[List[PaperMetadataRecord]]:
+    ) -> AsyncIterable[PaperMetadataRecord]:
         """Runs the paper metadata ingestion given subject and date range.
 
         Args:
@@ -157,7 +157,7 @@ class PaperMetadataIngestion(Generic[PaperSchemaType], ABC):
             until_date (datetime): The until date to ingest.
 
         Returns:
-            AsyncIterable[List[PaperMetadataRecord]]: An asynchronous iterable of
-                lists of paper metadata records.
+            AsyncIterable[PaperMetadataRecord]: An asynchronous iterable of
+                paper metadata records.
         """
         pass
