@@ -1,14 +1,17 @@
-from typing import List, Optional
+from typing import ClassVar, List, Optional
 import xml.etree.ElementTree as ET
 
-from common.datasources.arxiv.const import NAMESPACE
+from common.datasources.arxiv.const import DATASOURCE_NAME, NAMESPACE
 from common.datasources.arxiv.schema import ArxivPaperMetadataRecord
+from common.datasources.base import PaperMetadataParser
 from common.utils.logger.logger_config import LoggerManager
 
 logger = LoggerManager.get_logger(__name__)
 
 
-class ArxivPaperParser:
+class ArxivPaperParser(PaperMetadataParser[ArxivPaperMetadataRecord]):
+    DATASOURCE_NAME: ClassVar[str] = DATASOURCE_NAME
+
     def parse(
         self, raw_data: str, primary_subject_code: str, domain_code: str
     ) -> List[ArxivPaperMetadataRecord]:

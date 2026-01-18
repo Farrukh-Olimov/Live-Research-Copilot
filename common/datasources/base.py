@@ -43,6 +43,8 @@ class CategoryFetcher(ABC):
 
 
 class PaperMetadataParser(Generic[PaperSchemaType], ABC):
+    DATASOURCE_NAME: ClassVar[str]
+
     @abstractmethod
     def parse(
         self, raw_data: Any, primary_subject_code: str, domain_code: str
@@ -73,6 +75,8 @@ class PaperMetadataParser(Generic[PaperSchemaType], ABC):
 
 
 class PaperMetadataNormalizer(Generic[PaperSchemaType], ABC):
+    DATASOURCE_NAME: ClassVar[str]
+
     @abstractmethod
     def normalize(self, paper_record: PaperSchemaType) -> PaperMetadataRecord:
         """Normalizes a datasource paper metadata object into a PaperMetadataRecord.

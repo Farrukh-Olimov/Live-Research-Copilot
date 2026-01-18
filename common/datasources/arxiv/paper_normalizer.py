@@ -1,9 +1,14 @@
+from typing import ClassVar
+
+from common.datasources.arxiv.const import DATASOURCE_NAME
 from common.datasources.arxiv.schema import ArxivPaperMetadataRecord
 from common.datasources.base import PaperMetadataNormalizer
 from common.datasources.schema import PaperMetadataRecord
 
 
 class ArxivPaperMetadataNormalize(PaperMetadataNormalizer[ArxivPaperMetadataRecord]):
+    DATASOURCE_NAME: ClassVar[str] = DATASOURCE_NAME
+
     def normalize(self, paper_record: ArxivPaperMetadataRecord) -> PaperMetadataRecord:
         """Normalizes an arXiv paper metadata object into a PaperMetadataRecord.
 
