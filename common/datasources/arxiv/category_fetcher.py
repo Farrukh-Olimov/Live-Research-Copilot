@@ -54,9 +54,8 @@ class ArxivCategoryFetcher(CategoryFetcher):
             },
         )
 
-    @staticmethod
     def _parse_set(
-        set_spec: str, set_name: str, domains: Dict[str, DomainSchema]
+        self, set_spec: str, set_name: str, domains: Dict[str, DomainSchema]
     ) -> Optional[SubjectSchema]:
         """Parse a single set specification from arXiv into a SubjectSchema object.
 
@@ -71,7 +70,11 @@ class ArxivCategoryFetcher(CategoryFetcher):
               (e.g., because the domain is missing).
         """
         if ":" not in set_spec:
-            domain = DomainSchema(code=set_spec, name=set_name)
+            domain = DomainSchema(
+                code=set_spec,
+                name=set_name,
+                datasource_uuid=self._datasource_uuid,
+            )
             domains[set_spec] = domain
             return None
 

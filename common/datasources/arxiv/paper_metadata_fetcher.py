@@ -17,7 +17,7 @@ class ArxivPaperMetadataFetcher(PaperMetadataFetcher[ArxivPaperMetadataRecord]):
     PARAMS = {"verb": "ListRecords"}
 
     @staticmethod
-    def get_request_parameters(
+    def _get_request_parameters(
         subject_code: str,
         from_data: datetime,
         until_data: datetime,
@@ -44,6 +44,22 @@ class ArxivPaperMetadataFetcher(PaperMetadataFetcher[ArxivPaperMetadataRecord]):
             params["set"] = subject_code
         return params
 
+    @staticmethod
+    def get_domain_code(subject_code: str) -> str:
+        """Returns the domain code from a subject code.
+
+        Args:
+            subject_code (str): The subject code to parse.
+
+        Returns:
+            str: The domain code extracted from the subject code.
+
+        Examples:
+            >>> ArxivPaperMetadataFetcher.get_domain_code("cs:AI")
+            'cs'
+        """
+        return subject_code.split(":")[0]
+
     async def fetch_paper_metadata(
         self,
         subject_code: str,
@@ -62,10 +78,10 @@ class ArxivPaperMetadataFetcher(PaperMetadataFetcher[ArxivPaperMetadataRecord]):
                 of paper metadata objects.
         """
         resumption_token = None
-        domain_code = subject_code.split(":")[0]
+        domain_code = self.get_domain_code(subject_code)
 
         while True:
-            params = self.get_request_parameters(
+            params = self._get_request_parameters(
                 subject_code, from_date, until_date, resumption_token
             )
 

@@ -3,7 +3,7 @@ from .base import BaseModel
 from .domain import Domain
 from .paper import Paper
 from .relationships import paper_authors, paper_subject
-from .source import Source
+from .datasource import Datasource
 from .subject import Subject
 
 __all__ = [
@@ -11,7 +11,7 @@ __all__ = [
     "BaseModel",
     "Domain",
     "Paper",
-    "Source",
+    "Datasource",
     "Subject",
     "paper_authors",
     "paper_subject",

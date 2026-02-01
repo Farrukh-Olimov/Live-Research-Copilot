@@ -2,7 +2,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Any, AsyncIterable, ClassVar, Dict, Generic, Optional, TypeVar
-
+from uuid import UUID
 from httpx import AsyncClient
 
 from common.datasources.schema import (
@@ -20,13 +20,15 @@ class CategoryFetcher(ABC):
 
     DATASOURCE_NAME: ClassVar[str]
 
-    def __init__(self, client: AsyncClient):
+    def __init__(self, client: AsyncClient, datasource_uuid: UUID):
         """Initialize the category fetcher.
 
         Args:
             client: The httpx client to use for fetching categories.
+            datasource_uuid: The uuid of the datasource.
         """
         self._client = client
+        self._datasource_uuid = datasource_uuid
 
     @abstractmethod
     async def fetch_subjects(self) -> AsyncIterable[SubjectSchema]:
@@ -108,6 +110,12 @@ class PaperMetadataFetcher(Generic[PaperSchemaType], ABC):
         """
         self._client = client
         self._paper_parser = paper_parser
+
+    @staticmethod
+    @abstractmethod
+    def get_domain_code(subject_code: str) -> str:
+        """Returns the domain code from a subject code."""
+        pass
 
     @abstractmethod
     async def fetch_paper_metadata(

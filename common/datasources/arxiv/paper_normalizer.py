@@ -22,11 +22,11 @@ class ArxivPaperMetadataNormalize(PaperMetadataNormalizer[ArxivPaperMetadataReco
         return PaperMetadataRecord(
             abstract=paper_record.abstract,
             authors=paper_record.authors,
-            domain=paper_record.domain,
+            domain_code=paper_record.domain_code,
             paper_id=paper_record.arxiv_id,
-            primary_subject=paper_record.primary_subject,
+            primary_subject_code=paper_record.primary_subject_code,
             publish_date=paper_record.publish_date,
-            secondary_subjects=paper_record.secondary_subjects,
+            secondary_subject_codes=paper_record.secondary_subject_codes,
             source=ArxivPaperMetadataRecord.DATASOURCE_NAME,
             title=paper_record.title,
         )

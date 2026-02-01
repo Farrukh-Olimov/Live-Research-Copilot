@@ -13,14 +13,14 @@ class ArxivPaperMetadataRecord(BasePaperSchema):
     abstract: str = Field(description="Abstract of the paper")
     arxiv_id: str = Field(description="Arxiv ID of the paper")
     authors: List[str] = Field(description="Authors of the paper")
-    domain: str = Field(
+    domain_code: str = Field(
         description="High-level academic domain (e.g., computer science, physics, math)"
     )
-    primary_subject: str = Field(
+    primary_subject_code: str = Field(
         description="Primary subject within the domain (e.g., AI, CV, NLP)"
     )
     publish_date: date = Field(description="Date of publication")
-    secondary_subjects: Optional[List[str]] = Field(
+    secondary_subject_codes: Optional[List[str]] = Field(
         description="Secondary subject within the domain"
     )
     title: str = Field(description="Title of the paper")

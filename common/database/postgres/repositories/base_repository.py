@@ -1,6 +1,6 @@
 from typing import Generic, Type, TypeVar
-
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from sqlalchemy.orm import DeclarativeMeta
 
 ModelType = TypeVar("ModelType", bound=DeclarativeMeta)
@@ -12,12 +12,20 @@ class BaseRepository(Generic[ModelType]):
     All specific repositories inherit from this.
     """
 
-    def __init__(self, model: Type[ModelType], session: AsyncSession):
+    def __init__(self, model: Type[ModelType]):
         """Initialize the repository with a model and session.
 
         Args:
             model: The ORM model class.
-            session: The async session to use for database operations.
         """
         self.model = model
-        self.session = session
+
+    async def create(self, model: ModelType, session: AsyncSession) -> ModelType:
+        """Creates a model."""
+        session.add(model)
+        await session.flush()
+        return model
+
+    async def delete(self, model: ModelType, session: AsyncSession):
+        """Deletes a model."""
+        await session.delete(model)

@@ -45,17 +45,17 @@ class ArxivPaperMetadataParser(PaperMetadataParser[ArxivPaperMetadataRecord]):
                 arxiv_id = self._get_arxiv_id(header)
                 authors = self._get_authors(arxiv_el)
                 title = self._get_title(arxiv_el)
-                subjects = self._get_subjects(header, primary_subject_code)
+                subject_codes = self._get_subject_codes(header, primary_subject_code)
                 publication_date = self._get_publication_date(arxiv_el)
                 records.append(
                     ArxivPaperMetadataRecord(
                         abstract=abstract,
                         arxiv_id=arxiv_id,
                         authors=authors,
-                        domain=domain_code,
-                        primary_subject=primary_subject_code,
+                        domain_code=domain_code,
+                        primary_subject_code=primary_subject_code,
                         publish_date=publication_date,
-                        secondary_subjects=subjects,
+                        secondary_subject_codes=subject_codes,
                         title=title,
                     )
                 )
@@ -64,7 +64,9 @@ class ArxivPaperMetadataParser(PaperMetadataParser[ArxivPaperMetadataRecord]):
 
         return records
 
-    def _get_subjects(self, header: ET.Element, primary_subject_code: str) -> List[str]:
+    def _get_subject_codes(
+        self, header: ET.Element, primary_subject_code: str
+    ) -> List[str]:
         """Extracts all subjects from an arXiv API record header.
 
         Args:
