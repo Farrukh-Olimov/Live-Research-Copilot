@@ -7,6 +7,9 @@ from common.database.postgres.models.domain import Domain
 from common.database.postgres.models.subject import Subject
 from common.database.postgres.repositories import DomainRepository, SubjectRepository
 from common.datasources.schema import SubjectSchema
+from common.utils.logger.logger_config import LoggerManager
+
+logger = LoggerManager.get_logger(__name__)
 
 
 class CategoryIngestionService:
@@ -45,23 +48,32 @@ class CategoryIngestionService:
                             name=subject.domain.name,
                             datasource_id=subject.domain.datasource_uuid,
                         )
+                        await self.domain_repository.create(domain, session)
                     except IntegrityError:
+                        logger.warning(
+                            f"Domain code already exists",
+                            extra={"domain": subject.domain},
+                        )
                         domain = await self.domain_repository.get_by_code(
                             subject.domain.code, subject.domain.datasource_uuid, session
                         )
-                    await self.domain_repository.create(domain, session)
 
                 existing_subject = await self.subject_repository.get_by_code(
                     subject.code, session
                 )
 
                 if not existing_subject:
-                    new_subject = Subject(
-                        code=subject.code,
-                        name=subject.name,
-                        domain_id=domain.id,
-                    )
-                    await self.subject_repository.create(new_subject, session)
+                    try:
+                        new_subject = Subject(
+                            code=subject.code,
+                            name=subject.name,
+                            domain_id=domain.id,
+                        )
+                        await self.subject_repository.create(new_subject, session)
+                    except IntegrityError:
+                        logger.warning(
+                            f"Subject already exists", extra={"subject": subject}
+                        )
 
     async def ingest_subjects_batch(self, subjects: List[SubjectSchema]):
         """Ingests a batch of subjects and their domains into the database.
@@ -73,6 +85,7 @@ class CategoryIngestionService:
             None
         """
         if not subjects:
+            logger.info("No subjects to ingest")
             return
         async with self.db_session_factory() as session:
             async with session.begin():
@@ -142,6 +155,7 @@ class CategoryIngestionService:
                 subject = await self.subject_repository.get_by_code(
                     subject.code, session
                 )
+                logger.info("Deleting subject", extra={"subject": subject})
                 await self.subject_repository.delete_subject(subject, session)
 
     async def delete_subject_and_domain(self, subject: SubjectSchema):
@@ -160,6 +174,10 @@ class CategoryIngestionService:
                 )
                 domain_1 = await self.domain_repository.get_by_code(
                     subject.domain.code, subject.domain.datasource_uuid, session
+                )
+                logger.info(
+                    "Deleting subject and domain",
+                    extra={"subject": subject},
                 )
                 await self.subject_repository.delete_subject(subject_1, session)
                 await self.domain_repository.delete_domain(domain_1, session)
