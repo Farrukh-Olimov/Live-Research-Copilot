@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import AsyncIterable, ClassVar, Optional
+from typing import AsyncIterator, ClassVar, Optional
 
 from common.datasources.arxiv.const import DATASOURCE_NAME
 from common.datasources.arxiv.schema import ArxivPaperMetadataRecord
@@ -65,7 +65,7 @@ class ArxivPaperMetadataFetcher(PaperMetadataFetcher[ArxivPaperMetadataRecord]):
         subject_code: str,
         from_date: datetime,
         until_date: datetime,
-    ) -> AsyncIterable[ArxivPaperMetadataRecord]:
+    ) -> AsyncIterator[ArxivPaperMetadataRecord]:
         """Fetches paper metadata from the arXiv API.
 
         Args:
@@ -74,9 +74,13 @@ class ArxivPaperMetadataFetcher(PaperMetadataFetcher[ArxivPaperMetadataRecord]):
             until_date (datetime): The until date to query.
 
         Yields:
-            AsyncIterable[ArxivPaperSchema]: An asynchronous iterable
+            AsyncIterator[ArxivPaperSchema]: An asynchronous iterator
                 of paper metadata objects.
         """
+        logger.info(
+            "Start fetching paper metadata", extra={"subject_code": subject_code}
+        )
+
         resumption_token = None
         domain_code = self.get_domain_code(subject_code)
 
@@ -96,3 +100,7 @@ class ArxivPaperMetadataFetcher(PaperMetadataFetcher[ArxivPaperMetadataRecord]):
 
             if not resumption_token:
                 break
+
+        logger.info(
+            "Finished fetching paper metadata", extra={"subject_code": subject_code}
+        )

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import AsyncIterable, ClassVar
+from typing import AsyncIterator, ClassVar
 
 from httpx import AsyncClient
 
@@ -9,6 +9,9 @@ from common.datasources.arxiv.paper_metadata_parser import ArxivPaperMetadataPar
 from common.datasources.arxiv.paper_normalizer import ArxivPaperMetadataNormalize
 from common.datasources.arxiv.schema import ArxivPaperMetadataRecord
 from common.datasources.base import PaperMetadataIngestion, PaperMetadataRecord
+from common.utils.logger.logger_config import LoggerManager
+
+logger = LoggerManager.get_logger(__name__)
 
 
 class ArxivPaperMetadataIngestion(PaperMetadataIngestion[ArxivPaperMetadataRecord]):
@@ -27,7 +30,7 @@ class ArxivPaperMetadataIngestion(PaperMetadataIngestion[ArxivPaperMetadataRecor
 
     async def run(
         self, subject: str, from_date: datetime, until_date: datetime
-    ) -> AsyncIterable[PaperMetadataRecord]:
+    ) -> AsyncIterator[PaperMetadataRecord]:
         """Runs the paper metadata ingestion for a given subject and date range.
 
         Args:
@@ -36,11 +39,29 @@ class ArxivPaperMetadataIngestion(PaperMetadataIngestion[ArxivPaperMetadataRecor
             until_date (datetime): The until date to ingest.
 
         Yields:
-            AsyncIterable[PaperMetadataRecord]: An asynchronous iterable
+            AsyncIterator[PaperMetadataRecord]: An asynchronous iterator
                 of paper metadata records.
         """
+        logger.info(
+            "Start ingesting paper metadata",
+            extra={
+                "subject": subject,
+                "from_date": from_date,
+                "until_date": until_date,
+            },
+        )
+
         async for paper in self._fetcher.fetch_paper_metadata(
             subject, from_date, until_date
         ):
             normalized_paper_metadata = self._normalizer.normalize(paper)
             yield normalized_paper_metadata
+
+        logger.info(
+            "Finished ingesting paper metadata",
+            extra={
+                "subject": subject,
+                "from_date": from_date,
+                "until_date": until_date,
+            },
+        )

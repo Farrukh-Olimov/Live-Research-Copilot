@@ -1,4 +1,4 @@
-from typing import AsyncIterable, ClassVar, Dict, Optional
+from typing import AsyncIterator, ClassVar, Dict, Optional
 import xml.etree.ElementTree as ET
 
 from common.datasources.arxiv.const import DATASOURCE_NAME, NAMESPACE
@@ -16,14 +16,14 @@ class ArxivCategoryFetcher(CategoryFetcher):
     TIMEOUT = 30
     URL = "https://oaipmh.arxiv.org/oai"
 
-    async def fetch_subjects(self) -> AsyncIterable[SubjectSchema]:
+    async def fetch_subjects(self) -> AsyncIterator[SubjectSchema]:
         """Fetches all subjects supported by the arXiv datasource.
 
         Yields an asynchronous iterable of SubjectSchema objects,
         each representing a subject supported by arXiv.
 
         Returns:
-            AsyncIterable[SubjectSchema]: An asynchronous iterable
+            AsyncIterator[SubjectSchema]: An asynchronous iterator
                 of all subjects supported by arXiv.
         """
         logger.info("Fetching categories from arXiv")
