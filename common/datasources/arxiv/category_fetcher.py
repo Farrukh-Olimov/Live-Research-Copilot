@@ -1,21 +1,17 @@
 from typing import AsyncIterable, ClassVar, Dict, Optional
 import xml.etree.ElementTree as ET
 
+from common.datasources.arxiv.const import DATASOURCE_NAME, NAMESPACE
 from common.datasources.base import CategoryFetcher
-from common.datasources.registry.category_fetcher_registry import (
-    CategoryFetcherRegistry,
-)
 from common.datasources.schema import DomainSchema, SubjectSchema
 from common.utils.logger.logger_config import LoggerManager
 
 logger = LoggerManager.get_logger(__name__)
 
 
-@CategoryFetcherRegistry.register
 class ArxivCategoryFetcher(CategoryFetcher):
-    DATASOURCE_NAME: ClassVar[str] = "arxiv"
+    DATASOURCE_NAME: ClassVar[str] = DATASOURCE_NAME
 
-    NAMESPACE = {"oai": "http://www.openarchives.org/OAI/2.0/"}
     PARAMS = {"verb": "ListSets"}
     TIMEOUT = 30
     URL = "https://oaipmh.arxiv.org/oai"
@@ -42,9 +38,9 @@ class ArxivCategoryFetcher(CategoryFetcher):
         xml_bytes = await response.aread()
 
         root = ET.fromstring(xml_bytes)
-        for set_el in root.findall(".//oai:set", self.NAMESPACE):
-            set_spec = set_el.find("oai:setSpec", self.NAMESPACE).text.strip().lower()
-            set_name = set_el.find("oai:setName", self.NAMESPACE).text
+        for set_el in root.findall(".//oai:set", NAMESPACE):
+            set_spec = set_el.find("oai:setSpec", NAMESPACE).text.strip().lower()
+            set_name = set_el.find("oai:setName", NAMESPACE).text
             subject = self._parse_set(set_spec, set_name, all_domains)
             if subject:
                 subject_counts += 1
@@ -58,9 +54,8 @@ class ArxivCategoryFetcher(CategoryFetcher):
             },
         )
 
-    @staticmethod
     def _parse_set(
-        set_spec: str, set_name: str, domains: Dict[str, DomainSchema]
+        self, set_spec: str, set_name: str, domains: Dict[str, DomainSchema]
     ) -> Optional[SubjectSchema]:
         """Parse a single set specification from arXiv into a SubjectSchema object.
 
@@ -75,7 +70,11 @@ class ArxivCategoryFetcher(CategoryFetcher):
               (e.g., because the domain is missing).
         """
         if ":" not in set_spec:
-            domain = DomainSchema(code=set_spec, name=set_name)
+            domain = DomainSchema(
+                code=set_spec,
+                name=set_name,
+                datasource_uuid=self._datasource_uuid,
+            )
             domains[set_spec] = domain
             return None
 

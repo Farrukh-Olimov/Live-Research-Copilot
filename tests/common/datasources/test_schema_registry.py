@@ -2,6 +2,8 @@ import pytest
 
 from common.datasources.registry.schema_registry import DatasourceSchemaRegistry
 
+# TODO: Remove the test as registry usage for schema is removed
+
 
 def test_registry_is_empty_after_reset(reset_datasource_registry):
     """Tests that the datasource registry is empty.

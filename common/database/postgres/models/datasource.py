@@ -7,11 +7,12 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import BaseModel
 
 if TYPE_CHECKING:
+    from .domain import Domain
     from .paper import Paper
 
 
-class Source(BaseModel):
-    __tablename__ = "sources"
+class Datasource(BaseModel):
+    __tablename__ = "datasources"
     id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
         default=uuid4,
@@ -23,5 +24,11 @@ class Source(BaseModel):
         String, unique=True, nullable=False, comment="Name of the source"
     )
     papers: Mapped[List["Paper"]] = relationship(
-        back_populates="source",
+        back_populates="datasource",
+        lazy="selectin",
+    )
+
+    domains: Mapped[List["Domain"]] = relationship(
+        back_populates="datasource",
+        lazy="selectin",
     )

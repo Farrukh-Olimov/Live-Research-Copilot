@@ -10,9 +10,9 @@ from .relationships import paper_authors
 
 if TYPE_CHECKING:
     from .author import Author
+    from .datasource import Datasource
     from .domain import Domain
     from .relationships.paper_subject import PaperSubject
-    from .source import Source
 
 
 class Paper(BaseModel, TimestampModel):
@@ -59,16 +59,16 @@ class Paper(BaseModel, TimestampModel):
         Date, nullable=False, comment="Date of publication"
     )
 
-    source_id: Mapped[UUID] = mapped_column(
+    datasource_id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("sources.id"),
+        ForeignKey("datasources.id"),
         comment=(
             "ID of the source from which this paper"
             " was ingested (e.g., arXiv, PubMed)"
         ),
     )
-    source: Mapped["Source"] = relationship(
-        foreign_keys=[source_id],
+    datasource: Mapped["Datasource"] = relationship(
+        foreign_keys=[datasource_id],
         back_populates="papers",
     )
     title: Mapped[str] = mapped_column(

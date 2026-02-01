@@ -30,4 +30,4 @@ runs:
     
     - name: Run Tests
       shell: bash
-      run: make test
+      run: make test-coverage

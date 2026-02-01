@@ -25,14 +25,11 @@ async def async_engine():
 
 
 @pytest_asyncio.fixture
-async def session(async_engine):
+async def async_session_factory(async_engine):
     """Yields an async sqlalchemy session.
 
     This fixture is scoped to the session, meaning it will only be invoked
     once per test session.
     """
-    async_session = async_sessionmaker(async_engine, expire_on_commit=False)
-
-    async with async_session() as session:
-        yield session
-        await session.rollback()
+    async_session_factory = async_sessionmaker(async_engine, expire_on_commit=False)
+    return async_session_factory

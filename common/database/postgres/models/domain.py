@@ -1,12 +1,13 @@
 from typing import TYPE_CHECKING, List
 from uuid import uuid4
 
-from sqlalchemy import UUID, String, UniqueConstraint
+from sqlalchemy import UUID, ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import BaseModel
 
 if TYPE_CHECKING:
+    from .datasource import Datasource
     from .paper import Paper
     from .subject import Subject
 
@@ -25,6 +26,15 @@ class Domain(BaseModel):
 
     code: Mapped[str] = mapped_column(
         String(25), nullable=True, comment="Code for the domain, e.g., CS, Physics"
+    )
+    datasource_id: Mapped[UUID] = mapped_column(
+        ForeignKey("datasources.id"),
+        nullable=False,
+        index=True,
+        comment="ID of the data source (e.g., arXiv, PubMed)",
+    )
+    datasource: Mapped["Datasource"] = relationship(
+        back_populates="domains",
     )
 
     name: Mapped[str] = mapped_column(
