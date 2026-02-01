@@ -10,9 +10,9 @@ from .relationships import paper_authors
 
 if TYPE_CHECKING:
     from .author import Author
+    from .datasource import Datasource
     from .domain import Domain
     from .relationships.paper_subject import PaperSubject
-    from .datasource import Datasource
 
 
 class Paper(BaseModel, TimestampModel):

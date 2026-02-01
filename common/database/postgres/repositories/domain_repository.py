@@ -1,6 +1,6 @@
 from typing import List
 
-from sqlalchemy import select, UUID
+from sqlalchemy import UUID, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from common.database.postgres.models.domain import Domain

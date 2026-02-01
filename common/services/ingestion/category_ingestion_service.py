@@ -1,7 +1,8 @@
 from typing import List
 
-from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+
 from common.database.postgres.models.domain import Domain
 from common.database.postgres.models.subject import Subject
 from common.database.postgres.repositories import DomainRepository, SubjectRepository
@@ -13,8 +14,7 @@ class CategoryIngestionService:
         """Initializes a CategoryIngestionService object.
 
         Args:
-            session (AsyncSession): The SQL Alchemy session to use
-                for database operations.
+            db_session_factory (async_sessionmaker): The async session factory.
 
         Returns:
             None

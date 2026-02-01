@@ -1,5 +1,7 @@
-import pytest
 from uuid import uuid4
+
+import pytest
+
 from common.constants import DataSource
 from common.datasources.arxiv import ArxivCategoryFetcher
 from common.datasources.factories import CategoryFetcherFactory

@@ -1,10 +1,11 @@
-from typing import Optional, AsyncGenerator
 import os
+from typing import AsyncGenerator, Optional
+
 from sqlalchemy.ext.asyncio import (
-    create_async_engine,
     AsyncEngine,
-    async_sessionmaker,
     AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
 )
 
 _async_engine: Optional[AsyncEngine] = None
@@ -12,6 +13,7 @@ _async_session_factory: Optional[async_sessionmaker[AsyncSession]] = None
 
 
 def init_database():
+    """Initializes the global database connection."""
     global _async_engine
     global _async_session_factory
 
@@ -39,6 +41,14 @@ def init_database():
 
 
 async def get_session() -> AsyncGenerator:
+    """Yields an async SQLAlchemy session.
+
+    The session is yielded to the caller, and then closed
+    after the caller is finished with it.
+
+    Raises:
+        RuntimeError: if init_database() has not been called first.
+    """
     if _async_session_factory is None:
         raise RuntimeError("Call init_database() first")
 

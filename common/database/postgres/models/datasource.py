@@ -7,8 +7,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import BaseModel
 
 if TYPE_CHECKING:
-    from .paper import Paper
     from .domain import Domain
+    from .paper import Paper
 
 
 class Datasource(BaseModel):

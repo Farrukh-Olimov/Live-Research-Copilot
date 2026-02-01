@@ -1,10 +1,10 @@
 from typing import overload
+from uuid import UUID
 
 from httpx import AsyncClient
 
 from common.constants import DataSource
 from common.datasources.arxiv import ArxivCategoryFetcher
-from uuid import UUID
 
 
 class CategoryFetcherFactory:

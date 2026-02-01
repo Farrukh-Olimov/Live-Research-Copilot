@@ -1,6 +1,6 @@
 from typing import Generic, Type, TypeVar
-from sqlalchemy.ext.asyncio import AsyncSession
 
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeMeta
 
 ModelType = TypeVar("ModelType", bound=DeclarativeMeta)

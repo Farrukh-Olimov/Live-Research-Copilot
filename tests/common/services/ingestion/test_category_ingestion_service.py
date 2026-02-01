@@ -1,8 +1,10 @@
-import pytest
 from uuid import uuid4
+
+import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
-from common.database.postgres.repositories.base_repository import BaseRepository
+
 from common.database.postgres.models.datasource import Datasource
+from common.database.postgres.repositories.base_repository import BaseRepository
 from common.datasources.schema import SubjectSchema
 from common.services.ingestion import CategoryIngestionService
 
@@ -18,8 +20,7 @@ async def test_category_ingestion_single_subject(
     are correctly stored in the database.
 
     Args:
-        session (AsyncSession): The SQL Alchemy session to use
-            for database operations.
+        async_session_factory (async_sessionmaker): The async db session factory.
     """
     datasource_uuid = uuid4()
     datasource = Datasource(id=datasource_uuid, name=datasource_uuid.hex)
@@ -75,8 +76,7 @@ async def test_category_ingestion_dubplicate_subject(
     duplicated in the database.
 
     Args:
-        session (AsyncSession): The SQL Alchemy session to use
-            for database operations.
+        async_session_factory (async_sessionmaker): The async db session factory.
     """
     datasource_uuid = uuid4()
     datasource = Datasource(id=datasource_uuid, name=datasource_uuid.hex)
@@ -142,7 +142,7 @@ async def test_category_ingestion_batch(
     """Tests that the CategoryIngestionService can ingest a batch of subjects.
 
     Args:
-        session (AsyncSession): The SQL Alchemy session.
+        async_session_factory (async_sessionmaker): The async db session factory.
 
     Returns:
         None
@@ -201,7 +201,7 @@ async def test_empty_category_ingestion_batch(async_session_factory):
     """Tests that the CategoryIngestionService can ingest an empty list of subjects.
 
     Args:
-        async_session_factory (async_sessionmaker): The async session factory.
+        async_session_factory (async_sessionmaker): The async db session factory.
 
     Returns:
         None

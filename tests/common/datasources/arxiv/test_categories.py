@@ -1,5 +1,6 @@
-import pytest
 from uuid import uuid4
+
+import pytest
 
 from common.datasources.arxiv import ArxivCategoryFetcher
 from common.datasources.schema import SubjectSchema

@@ -1,15 +1,15 @@
 from typing import TYPE_CHECKING, List
 from uuid import uuid4
 
-from sqlalchemy import UUID, String, UniqueConstraint, ForeignKey
+from sqlalchemy import UUID, ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import BaseModel
 
 if TYPE_CHECKING:
+    from .datasource import Datasource
     from .paper import Paper
     from .subject import Subject
-    from .datasource import Datasource
 
 
 class Domain(BaseModel):
