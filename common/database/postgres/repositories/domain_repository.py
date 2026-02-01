@@ -15,20 +15,6 @@ class DomainRepository(BaseRepository[Domain]):
         """Initializes a DomainRepository object."""
         super().__init__(Domain)
 
-    async def create(self, domain: Domain, session: AsyncSession) -> Domain:
-        """Creates a domain."""
-        session.add(domain)
-        await session.flush()
-        return domain
-
-    async def create_many(
-        self, domains: List[Domain], session: AsyncSession
-    ) -> List[Domain]:
-        """Creates batch of domains."""
-        session.add_all(domains)
-        await session.flush()
-        return domains
-
     async def get_by_code(
         self, code: str, datasource_uuid: UUID, session: AsyncSession
     ) -> Domain:

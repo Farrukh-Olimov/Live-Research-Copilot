@@ -12,20 +12,6 @@ class SubjectRepository(BaseRepository[Subject]):
         """Initializes a SubjectRepository object."""
         super().__init__(Subject)
 
-    async def create(self, subject: Subject, session: AsyncSession) -> Subject:
-        """Creates a subject."""
-        session.add(subject)
-        await session.flush()
-        return subject
-
-    async def create_many(
-        self, subjects: List[Subject], session: AsyncSession
-    ) -> List[Subject]:
-        """Creates batch of subjects."""
-        session.add_all(subjects)
-        await session.flush()
-        return subjects
-
     async def get_by_code(self, code: str, session: AsyncSession) -> Subject:
         """Returns a subject by code."""
         query = select(Subject).filter_by(code=code)

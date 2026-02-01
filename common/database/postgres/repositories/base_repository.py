@@ -26,6 +26,14 @@ class BaseRepository(Generic[ModelType]):
         await session.flush()
         return model
 
+    async def create_many(
+        self, models: list[ModelType], session: AsyncSession
+    ) -> list[ModelType]:
+        """Creates a list of models."""
+        session.add_all(models)
+        await session.flush()
+        return models
+
     async def delete(self, model: ModelType, session: AsyncSession):
         """Deletes a model."""
         await session.delete(model)
