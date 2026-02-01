@@ -1,12 +1,12 @@
-from typing import List
 from uuid import UUID
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from common.constants.datasource import DataSource
 from common.database.postgres.models.datasource import Datasource
 
 from .base_repository import BaseRepository
-from common.constants.datasource import DataSource
 
 
 class DatasourceRepository(BaseRepository[Datasource]):
