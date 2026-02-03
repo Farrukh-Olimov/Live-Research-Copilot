@@ -83,7 +83,9 @@ class PaperMetadataIngestionService:
         Returns:
             Paper: The paper found or created, or None.
         """
-        paper = await self._paper_repository.get_by_title(paper_metadata.title, session)
+        paper = await self._paper_repository.get_by_paper_id(
+            paper_metadata.paper_id, session
+        )
         if paper:
             logger.info(
                 "Paper already exists",
@@ -178,7 +180,6 @@ class PaperMetadataIngestionService:
             subject,
             secondary_subjects,
             datasource_uuid,
-            datasource_type,
             session,
         )
         return paper

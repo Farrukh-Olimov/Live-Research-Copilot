@@ -79,7 +79,8 @@ class Paper(BaseModel, TimestampModel):
     title: Mapped[str] = mapped_column(
         Text, nullable=False, comment="Title of the paper"
     )
-    url: Mapped[str] = mapped_column(
+
+    paper_identifier: Mapped[str] = mapped_column(
         String,
         nullable=False,
         unique=True,

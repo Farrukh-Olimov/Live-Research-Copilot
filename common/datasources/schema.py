@@ -25,7 +25,7 @@ class PaperMetadataRecord(BaseModel):
     abstract: str = Field(description="Abstract of the paper")
     authors: List[str] = Field(description="Authors of the paper")
     domain_code: str = Field(description="High-level academic domain")
-    paper_id: str = Field(description="Paper ID")
+    paper_id: str = Field(description="Paper ID or URL")
     primary_subject_code: str = Field(description="Primary subject within the domain")
     publish_date: date = Field(description="Date of publication")
     secondary_subject_codes: List[str] = Field(
