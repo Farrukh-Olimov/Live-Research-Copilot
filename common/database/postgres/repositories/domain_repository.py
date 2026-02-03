@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy import UUID, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,7 +17,7 @@ class DomainRepository(BaseRepository[Domain]):
 
     async def get_by_code(
         self, code: str, datasource_uuid: UUID, session: AsyncSession
-    ) -> Domain:
+    ) -> Optional[Domain]:
         """Returns a domain by code."""
         query = select(Domain).filter_by(code=code, datasource_id=datasource_uuid)
         rows = await session.execute(query)

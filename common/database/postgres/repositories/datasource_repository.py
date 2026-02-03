@@ -1,5 +1,5 @@
 from uuid import UUID
-
+from typing import Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -21,7 +21,7 @@ class DatasourceRepository(BaseRepository[Datasource]):
 
     async def get_uuid_by_name(
         self, datasource_name: DataSource, session: AsyncSession
-    ) -> UUID:
+    ) -> Optional[UUID]:
         """Returns the UUID of the datasource with the given name.
 
         Args:

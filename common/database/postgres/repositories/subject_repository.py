@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,7 +12,7 @@ class SubjectRepository(BaseRepository[Subject]):
         """Initializes a SubjectRepository object."""
         super().__init__(Subject)
 
-    async def get_by_code(self, code: str, session: AsyncSession) -> Subject:
+    async def get_by_code(self, code: str, session: AsyncSession) -> Optional[Subject]:
         """Returns a subject by code."""
         query = select(Subject).filter_by(code=code)
         rows = await session.execute(query)

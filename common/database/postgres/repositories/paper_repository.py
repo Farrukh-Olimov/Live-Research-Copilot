@@ -1,11 +1,10 @@
-from uuid import UUID
+from typing import Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from common.constants.datasource import DataSource
 from common.database.postgres.models import Paper
-from typing import Optional
+
 from .base_repository import BaseRepository
 
 

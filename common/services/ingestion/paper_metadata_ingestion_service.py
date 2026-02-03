@@ -6,14 +6,14 @@ from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from common.constants import DataSource
+from common.database.postgres.models import Author, Domain, Paper, Subject
 from common.database.postgres.models.relationships import PaperSubject
-from common.database.postgres.models import Author, Domain, Subject, Paper
 from common.database.postgres.repositories import (
     AuthorRespotitory,
     DatasourceRepository,
     DomainRepository,
-    SubjectRepository,
     PaperRepository,
+    SubjectRepository,
 )
 from common.datasources.factories import PaperMetadataIngestionFactory
 from common.datasources.schema import PaperMetadataRecord
@@ -81,7 +81,7 @@ class PaperMetadataIngestionService:
             session (AsyncSession): The database session.
 
         Returns:
-            Paper: The paper found or created, or None if the paper failed to be created.
+            Paper: The paper found or created, or None.
         """
         paper = await self._paper_repository.get_by_title(paper_metadata.title, session)
         if paper:
@@ -102,7 +102,7 @@ class PaperMetadataIngestionService:
         )
 
         paper = await self._paper_repository.create(paper, session)
-        if not paper:
+        if paper is None:
             logger.error(
                 "Failed to create paper",
                 extra={
@@ -134,8 +134,7 @@ class PaperMetadataIngestionService:
         datasource_type: DataSource,
         session: AsyncSession,
     ) -> Optional[Paper]:
-        """
-        Orchestrates the ingestion of a paper.
+        """Orchestrates the ingestion of a paper.
 
         Args:
             paper (PaperMetadataRecord): The paper to ingest.
@@ -149,7 +148,7 @@ class PaperMetadataIngestionService:
         domain = await self._get_domain(
             paper.domain_code, datasource_uuid, datasource_type, session
         )
-        if not domain:
+        if domain is None:
             return None
 
         # Get subjects
@@ -159,7 +158,7 @@ class PaperMetadataIngestionService:
             datasource_type,
             session,
         )
-        if not subject:
+        if subject is None:
             return None
 
         secondary_subjects = self._subject_repository.get_by_codes(
@@ -204,7 +203,6 @@ class PaperMetadataIngestionService:
                 of paper metadata records.
         """
         ingestion = self._factory.create(datasource_type, self._http_client)
-        domain_code = ingestion._fetcher.get_domain_code(subject)
         datasource_uuid = None
 
         async with self._db_session_factory() as session:
@@ -264,7 +262,7 @@ class PaperMetadataIngestionService:
         domain = await self._domain_repository.get_by_code(
             domain_code, datasource_uuid, session
         )
-        if not domain:
+        if domain is None:
             logger.error(
                 "Domain not found",
                 extra={
@@ -294,7 +292,7 @@ class PaperMetadataIngestionService:
             Optional[Subject]: The subject found, or None if the subject is not found.
         """
         subject = await self._subject_repository.get_by_code(subject_code, session)
-        if not subject:
+        if subject is None:
             logger.error(
                 "Subject not found",
                 extra={
