@@ -237,9 +237,7 @@ class PaperMetadataIngestionService:
             datasource_type, session
         )
         if datasource_uuid is None:
-            raise ValueError(
-                "Datasource  not found", extra={"datasource": datasource_type}
-            )
+            raise ValueError(f"{datasource_type} datasource is not found")
         return datasource_uuid
 
     async def _get_domain(

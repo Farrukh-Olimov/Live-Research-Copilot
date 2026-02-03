@@ -3,7 +3,7 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from common.database.postgres.models.datasource import Datasource
+from common.database.postgres.models import Datasource
 from common.database.postgres.repositories.base_repository import BaseRepository
 from common.datasources.schema import SubjectSchema
 from common.services.ingestion import CategoryIngestionService

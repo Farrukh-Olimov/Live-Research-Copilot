@@ -32,6 +32,6 @@ class DatasourceRepository(BaseRepository[Datasource]):
         Returns:
             UUID: The UUID of the datasource.
         """
-        query = select(Datasource.id).where(DataSource.name == datasource_name)
+        query = select(Datasource.id).where(Datasource.name == datasource_name)
         rows = await session.execute(query)
         return rows.scalar_one_or_none()
