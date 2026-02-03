@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 import os
 from typing import AsyncGenerator, Optional
 
@@ -40,6 +41,7 @@ def init_database():
         )
 
 
+@asynccontextmanager
 async def get_session() -> AsyncGenerator:
     """Yields an async SQLAlchemy session.
 

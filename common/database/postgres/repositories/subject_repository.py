@@ -3,7 +3,7 @@ from typing import List
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from common.database.postgres.models.subject import Subject
+from common.database.postgres.models import Subject
 from common.database.postgres.repositories.base_repository import BaseRepository
 
 

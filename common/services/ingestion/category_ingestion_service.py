@@ -3,8 +3,7 @@ from typing import List
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from common.database.postgres.models.domain import Domain
-from common.database.postgres.models.subject import Subject
+from common.database.postgres.models import Domain, Subject
 from common.database.postgres.repositories import DomainRepository, SubjectRepository
 from common.datasources.schema import SubjectSchema
 from common.utils.logger.logger_config import LoggerManager
@@ -51,7 +50,7 @@ class CategoryIngestionService:
                         await self.domain_repository.create(domain, session)
                     except IntegrityError:
                         logger.warning(
-                            f"Domain code already exists",
+                            "Domain code already exists",
                             extra={"domain": subject.domain},
                         )
                         domain = await self.domain_repository.get_by_code(
@@ -72,7 +71,7 @@ class CategoryIngestionService:
                         await self.subject_repository.create(new_subject, session)
                     except IntegrityError:
                         logger.warning(
-                            f"Subject already exists", extra={"subject": subject}
+                            "Subject already exists", extra={"subject": subject}
                         )
 
     async def ingest_subjects_batch(self, subjects: List[SubjectSchema]):

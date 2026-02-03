@@ -7,9 +7,9 @@ from typing import (
     ClassVar,
     Dict,
     Generic,
+    List,
     Optional,
     TypeVar,
-    List,
 )
 from uuid import UUID
 
