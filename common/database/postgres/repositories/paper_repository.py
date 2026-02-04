@@ -1,6 +1,7 @@
 from typing import List, Optional
+from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from common.database.postgres.models import Paper
@@ -37,3 +38,13 @@ class PaperRepository(BaseRepository[Paper]):
         """Add subjects to a paper."""
         session.add_all(subjects)
         await session.flush()
+
+    async def count_papers(self, datasource_id: UUID, session: AsyncSession) -> int:
+        """Counts the number of papers from a given datasource."""
+        query = (
+            select(func.count())
+            .select_from(Paper)
+            .where(Paper.datasource_id == datasource_id)
+        )
+        rows = await session.execute(query)
+        return rows.scalar_one()
