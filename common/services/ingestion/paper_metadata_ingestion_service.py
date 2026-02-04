@@ -68,7 +68,7 @@ class PaperMetadataIngestionService:
         secondary_subjects: List[Subject],
         datasource_uuid: UUID,
         session: AsyncSession,
-    ):
+    ) -> Optional[Paper]:
         """Gets or creates a paper from the database.
 
         Args:
@@ -128,8 +128,9 @@ class PaperMetadataIngestionService:
                 for subject in secondary_subjects
             ]
         )
+        return paper
 
-    async def _paper_orchestrator(
+    async def _ingest_one(
         self,
         paper: PaperMetadataRecord,
         datasource_uuid: UUID,
@@ -163,7 +164,7 @@ class PaperMetadataIngestionService:
         if subject is None:
             return None
 
-        secondary_subjects = self._subject_repository.get_by_codes(
+        secondary_subjects = await self._subject_repository.get_by_codes(
             paper.secondary_subject_codes, session
         )
 
@@ -207,14 +208,12 @@ class PaperMetadataIngestionService:
         datasource_uuid = None
 
         async with self._db_session_factory() as session:
-            async with session:
-                datasource_uuid = await self._get_datasource_uuid(
-                    datasource_type, session
-                )
+            datasource_uuid = await self._get_datasource_uuid(datasource_type, session)
 
-            async for paper in ingestion.run(subject, from_date, until_date):
+        async for paper in ingestion.run(subject, from_date, until_date):
+            async with self._db_session_factory() as session:
                 async with session.begin():
-                    await self._paper_orchestrator(
+                    await self._ingest_one(
                         paper, datasource_uuid, datasource_type, session
                     )
 
