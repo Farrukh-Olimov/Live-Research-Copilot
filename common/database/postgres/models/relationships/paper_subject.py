@@ -35,4 +35,5 @@ class PaperSubject(BaseModel):
     )
     subject: Mapped["Subject"] = relationship(
         back_populates="paper_subjects",
+        lazy="selectin",
     )

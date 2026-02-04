@@ -43,5 +43,6 @@ class Subject(BaseModel):
         comment="Name of the primary subject, e.g., Physics",
     )
     paper_subjects: Mapped[List["PaperSubject"]] = relationship(
-        back_populates="subject"
+        back_populates="subject",
+        lazy="selectin",
     )

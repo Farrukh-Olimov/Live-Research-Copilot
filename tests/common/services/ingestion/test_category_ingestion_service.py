@@ -42,7 +42,7 @@ async def test_category_ingestion_single_subject(
     async with async_session_factory() as session:
         async with session:
             await base_repository.create(datasource, session)
-            domain = await service.domain_repository.get_by_code(
+            domain = await service._database.domain.get_by_code(
                 subject.domain.code, datasource_uuid, session
             )
 
@@ -50,7 +50,7 @@ async def test_category_ingestion_single_subject(
             assert domain.code == "cs"
             assert domain.name == "Computer Science"
 
-            subject_1 = await service.subject_repository.get_by_code(
+            subject_1 = await service._database.subject.get_by_code(
                 subject.code, session
             )
             await session.commit()
@@ -98,20 +98,20 @@ async def test_category_ingestion_dubplicate_subject(
     async with async_session_factory() as session:
         async with session:
             await base_repository.create(datasource, session)
-            domain1 = await service.domain_repository.get_by_code(
+            domain1 = await service._database.domain.get_by_code(
                 subject.domain.code, datasource_uuid, session
             )
-            subject1 = await service.subject_repository.get_by_code(
+            subject1 = await service._database.subject.get_by_code(
                 subject.code, session
             )
             await session.commit()
 
             await service.ingest_subject(subject)
 
-            domain2 = await service.domain_repository.get_by_code(
+            domain2 = await service._database.domain.get_by_code(
                 subject.domain.code, datasource_uuid, session
             )
-            subject2 = await service.subject_repository.get_by_code(
+            subject2 = await service._database.subject.get_by_code(
                 subject.code, session
             )
             await session.commit()
@@ -175,14 +175,14 @@ async def test_category_ingestion_batch(
         async with session:
             await base_repository.create(datasource, session)
             for i, subject in enumerate(subjects):
-                domain = await service.domain_repository.get_by_code(
+                domain = await service._database.domain.get_by_code(
                     subject.domain.code, datasource_uuid, session
                 )
                 assert domain is not None
                 assert domain.code == "cs"
                 assert domain.name == "Computer Science"
 
-                subject_1 = await service.subject_repository.get_by_code(
+                subject_1 = await service._database.subject.get_by_code(
                     subject.code, session
                 )
                 assert subject_1 is not None
@@ -191,7 +191,7 @@ async def test_category_ingestion_batch(
                 await session.commit()
 
                 await service.delete_subject(subject_1)
-            await service.domain_repository.delete_domain(domain, session)
+            await service._database.domain.delete_domain(domain, session)
             await base_repository.delete(datasource, session)
             await session.commit()
 

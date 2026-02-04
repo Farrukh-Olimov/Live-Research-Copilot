@@ -1,9 +1,10 @@
-from typing import Optional
+from typing import List, Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from common.database.postgres.models import Paper
+from common.database.postgres.models.relationships import PaperSubject
 
 from .base_repository import BaseRepository
 
@@ -31,3 +32,8 @@ class PaperRepository(BaseRepository[Paper]):
         query = select(Paper).where(Paper.paper_identifier == paper_id)
         rows = await session.execute(query)
         return rows.scalar_one_or_none()
+
+    async def add_subjects(self, subjects: List[PaperSubject], session: AsyncSession):
+        """Add subjects to a paper."""
+        session.add_all(subjects)
+        await session.flush()

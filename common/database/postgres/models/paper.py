@@ -71,6 +71,7 @@ class Paper(BaseModel, TimestampModel):
 
     paper_subjects: Mapped[List["PaperSubject"]] = relationship(
         back_populates="paper",
+        lazy="selectin",
     )
     publish_date: Mapped[date] = mapped_column(
         Date, nullable=False, comment="Date of publication"

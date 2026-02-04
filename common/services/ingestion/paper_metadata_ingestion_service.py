@@ -8,13 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from common.constants import DataSource
 from common.database.postgres.models import Author, Domain, Paper, Subject
 from common.database.postgres.models.relationships import PaperSubject
-from common.database.postgres.repositories import (
-    AuthorRespotitory,
-    DatasourceRepository,
-    DomainRepository,
-    PaperRepository,
-    SubjectRepository,
-)
+from common.database.postgres.repositories import DatabaseRepository
 from common.datasources.factories import PaperMetadataIngestionFactory
 from common.datasources.schema import PaperMetadataRecord
 from common.utils.logger.logger_config import LoggerManager
@@ -26,11 +20,7 @@ class PaperMetadataIngestionService:
     def __init__(
         self,
         factory: PaperMetadataIngestionFactory,
-        author_repository: AuthorRespotitory,
-        datasource_repository: DatasourceRepository,
-        domain_repository: DomainRepository,
-        paper_repository: PaperRepository,
-        subject_repository: SubjectRepository,
+        database_repository: DatabaseRepository,
         db_session_factory: async_sessionmaker[AsyncSession],
         http_client: AsyncClient,
     ):
@@ -40,22 +30,14 @@ class PaperMetadataIngestionService:
         Args:
             factory (PaperMetadataIngestionFactory): The paper metadata ingestion
                 factory.
-            author_repository (AuthorRespotitory): The author repository.
-            datasource_repository (DatasourceRepository): The datasource repository.
-            domain_repository (DomainRepository): The domain repository.
-            paper_repository (PaperRepository): The paper repository.
-            subject_repository (SubjectRepository): The subject repository.
+            database_repository (DatabaseRepository): The database repository.
             db_session_factory (async_sessionmaker): The async session factory.
             http_client (AsyncClient): The httpx client to use for fetching paper
                 metadata.
 
         """
         self._factory = factory
-        self._author_repository = author_repository
-        self._datasource_repository = datasource_repository
-        self._domain_repository = domain_repository
-        self._paper_repository = paper_repository
-        self._subject_repository = subject_repository
+        self._database = database_repository
         self._http_client = http_client
         self._db_session_factory = db_session_factory
 
@@ -83,7 +65,7 @@ class PaperMetadataIngestionService:
         Returns:
             Paper: The paper found or created, or None.
         """
-        paper = await self._paper_repository.get_by_paper_id(
+        paper = await self._database.paper.get_by_paper_id(
             paper_metadata.paper_id, session
         )
         if paper:
@@ -98,12 +80,12 @@ class PaperMetadataIngestionService:
             datasource_id=datasource_uuid,
             domain_id=domain.id,
             main_author_id=authors[0].id,
+            paper_identifier=paper_metadata.paper_id,
             publish_date=paper_metadata.publish_date,
             title=paper_metadata.title,
-            url=paper_metadata.source,
         )
 
-        paper = await self._paper_repository.create(paper, session)
+        paper = await self._database.paper.create(paper, session)
         if paper is None:
             logger.error(
                 "Failed to create paper",
@@ -113,21 +95,21 @@ class PaperMetadataIngestionService:
             )
             return None
 
-        paper.paper_subjects.append(
+        subjects = []
+        subjects.append(
             PaperSubject(
-                is_primary=True,
-                subject_id=primary_subject.id,
+                is_primary=True, subject_id=primary_subject.id, paper_id=paper.id
             )
         )
-        paper.paper_subjects.extend(
+        subjects.extend(
             [
-                PaperSubject(
-                    is_primary=False,
-                    subject_id=subject.id,
-                )
-                for subject in secondary_subjects
+                PaperSubject(is_primary=False, subject_id=s.id, paper_id=paper.id)
+                for s in secondary_subjects
             ]
         )
+        await self._database.paper.add_subjects(subjects, session)
+        await session.refresh(paper)
+
         return paper
 
     async def _ingest_one(
@@ -164,7 +146,7 @@ class PaperMetadataIngestionService:
         if subject is None:
             return None
 
-        secondary_subjects = await self._subject_repository.get_by_codes(
+        secondary_subjects = await self._database.subject.get_by_codes(
             paper.secondary_subject_codes, session
         )
 
@@ -232,7 +214,7 @@ class PaperMetadataIngestionService:
         Raises:
             ValueError: If the datasource is not found.
         """
-        datasource_uuid = await self._datasource_repository.get_uuid_by_name(
+        datasource_uuid = await self._database.datasource.get_uuid_by_name(
             datasource_type, session
         )
         if datasource_uuid is None:
@@ -257,7 +239,7 @@ class PaperMetadataIngestionService:
         Returns:
             Optional[Domain]: The domain found, or None if the domain is not found.
         """
-        domain = await self._domain_repository.get_by_code(
+        domain = await self._database.domain.get_by_code(
             domain_code, datasource_uuid, session
         )
         if domain is None:
@@ -289,7 +271,7 @@ class PaperMetadataIngestionService:
         Returns:
             Optional[Subject]: The subject found, or None if the subject is not found.
         """
-        subject = await self._subject_repository.get_by_code(subject_code, session)
+        subject = await self._database.subject.get_by_code(subject_code, session)
         if subject is None:
             logger.error(
                 "Subject not found",
@@ -320,7 +302,7 @@ class PaperMetadataIngestionService:
             List[Author]: The authors found or created.
         """
         # Get Authors
-        database_authors = await self._author_repository.get_by_names(
+        database_authors = await self._database.author.get_by_names(
             paper_authors, session
         )
         authors = []
@@ -330,9 +312,7 @@ class PaperMetadataIngestionService:
                 if paper_author not in author_names:
                     logger.info("Creating author", extra={"author": paper_author})
                     author = Author(name=paper_author)
-                    authors.append(
-                        await self._author_repository.create(author, session)
-                    )
+                    authors.append(await self._database.author.create(author, session))
                 else:
                     index = author_names.index(paper_author)
                     authors.append(database_authors[index])
