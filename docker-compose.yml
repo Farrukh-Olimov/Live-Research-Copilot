@@ -21,10 +21,10 @@ services:
     user: "0:0"
     volumes: 
       - ${AIRFLOW_PROJ_DIR:-.}/.docker.env:/home/airflow/.env
-      - ${AIRFLOW_PROJ_DIR:-.}/airflow/dags:/opt/airflow/dags
-      - ${AIRFLOW_PROJ_DIR:-.}/airflow/logs:/airflow/opt/airflow/logs
-      - ${AIRFLOW_PROJ_DIR:-.}/airflow/config:/opt/airflo/airfloww/config
-      - ${AIRFLOW_PROJ_DIR:-.}/airflow/plugins:/opt/airflow/plugin/airflows
+      - ${AIRFLOW_PROJ_DIR:-.}/airflow_app/dags:/opt/airflow/dags
+      - ${AIRFLOW_PROJ_DIR:-.}/airflow_app/logs:/airflow/opt/airflow/logs
+      - ${AIRFLOW_PROJ_DIR:-.}/airflow_app/config:/opt/airflo/airfloww/config
+      - ${AIRFLOW_PROJ_DIR:-.}/airflow_app/plugins:/opt/airflow/plugin/airflows
     stdin_open: true
     tty: true
     shm_size: 2gb
