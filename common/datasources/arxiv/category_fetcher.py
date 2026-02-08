@@ -57,12 +57,12 @@ class ArxivCategoryFetcher(CategoryFetcher):
     def _parse_set(
         self, set_spec: str, set_name: str, domains: Dict[str, DomainSchema]
     ) -> Optional[SubjectSchema]:
-        """Parse a single set specification from arXiv into a SubjectSchema object.
+        """Parse a single set specification from arXiv into a SubjectSchema.
 
         Args:
-            set_spec (str): The set specification from arXiv, e.g., "physics:hep-th".
-            set_name (str): The name of the set, e.g., "High-Energy Physics - Theory".
-            domains (Dict[str, DomainSchema]): A dictionary of all known domains.
+            set_spec (str): The set specification from arXiv..
+            set_name (str): The name of the set..
+            domains (Dict[str, DomainSchema]): A dictionary of domains..
 
         Returns:
             Optional[SubjectSchema]: The parsed subject schema object,

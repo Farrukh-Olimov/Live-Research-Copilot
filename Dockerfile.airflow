@@ -1,0 +1,7 @@
+FROM apache/airflow:3.1.3
+
+ADD requirements_airflow.txt .
+
+RUN pip install apache-airflow==${AIRFLOW_VERSION} -r requirements_airflow.txt
+
+

@@ -41,6 +41,11 @@ def init_database():
         )
 
 
+def get_session_factory() -> async_sessionmaker[AsyncSession]:
+    """Returns the global async SQLAlchemy session factory."""
+    return _async_session_factory
+
+
 @asynccontextmanager
 async def get_session() -> AsyncGenerator:
     """Yields an async SQLAlchemy session.
