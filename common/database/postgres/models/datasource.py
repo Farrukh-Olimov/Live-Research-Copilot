@@ -9,6 +9,7 @@ from .base import BaseModel
 if TYPE_CHECKING:
     from .domain import Domain
     from .paper import Paper
+    from .paper_ingestion_state import PaperIngestionState
 
 
 class Datasource(BaseModel):
@@ -31,4 +32,8 @@ class Datasource(BaseModel):
     domains: Mapped[List["Domain"]] = relationship(
         back_populates="datasource",
         lazy="selectin",
+    )
+
+    paper_ingestion_states: Mapped["PaperIngestionState"] = relationship(
+        back_populates="datasource",
     )
