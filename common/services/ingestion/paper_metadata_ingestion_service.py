@@ -37,7 +37,7 @@ class PaperMetadataIngestionService:
 
         """
         self._factory = factory
-        self._database = database_repository
+        self._db = database_repository
         self._http_client = http_client
         self._db_session_factory = db_session_factory
 
@@ -65,9 +65,7 @@ class PaperMetadataIngestionService:
         Returns:
             Paper: The paper found or created, or None.
         """
-        paper = await self._database.paper.get_by_paper_id(
-            paper_metadata.paper_id, session
-        )
+        paper = await self._db.paper.get_by_paper_id(paper_metadata.paper_id, session)
         if paper:
             logger.info(
                 "Paper already exists",
@@ -85,7 +83,7 @@ class PaperMetadataIngestionService:
             title=paper_metadata.title,
         )
 
-        paper = await self._database.paper.create(paper, session)
+        paper = await self._db.paper.create(paper, session)
         if paper is None:
             logger.error(
                 "Failed to create paper",
@@ -107,7 +105,7 @@ class PaperMetadataIngestionService:
                 for s in secondary_subjects
             ]
         )
-        await self._database.paper.add_subjects(subjects, session)
+        await self._db.paper.add_subjects(subjects, session)
         await session.refresh(paper)
 
         return paper
@@ -146,7 +144,7 @@ class PaperMetadataIngestionService:
         if subject is None:
             return None
 
-        secondary_subjects = await self._database.subject.get_by_codes(
+        secondary_subjects = await self._db.subject.get_by_codes(
             paper.secondary_subject_codes, session
         )
 
@@ -214,7 +212,7 @@ class PaperMetadataIngestionService:
         Raises:
             ValueError: If the datasource is not found.
         """
-        datasource_uuid = await self._database.datasource.get_uuid_by_name(
+        datasource_uuid = await self._db.datasource.get_uuid_by_name(
             datasource_type, session
         )
         if datasource_uuid is None:
@@ -239,7 +237,7 @@ class PaperMetadataIngestionService:
         Returns:
             Optional[Domain]: The domain found, or None if the domain is not found.
         """
-        domain = await self._database.domain.get_by_code(
+        domain = await self._db.domain.get_by_code(
             domain_code, datasource_uuid, session
         )
         if domain is None:
@@ -271,7 +269,7 @@ class PaperMetadataIngestionService:
         Returns:
             Optional[Subject]: The subject found, or None if the subject is not found.
         """
-        subject = await self._database.subject.get_by_code(subject_code, session)
+        subject = await self._db.subject.get_by_code(subject_code, session)
         if subject is None:
             logger.error(
                 "Subject not found",
@@ -302,9 +300,7 @@ class PaperMetadataIngestionService:
             List[Author]: The authors found or created.
         """
         # Get Authors
-        database_authors = await self._database.author.get_by_names(
-            paper_authors, session
-        )
+        database_authors = await self._db.author.get_by_names(paper_authors, session)
         authors = []
         if len(database_authors) != len(paper_authors):
             author_names = [author.name for author in database_authors]
@@ -312,7 +308,7 @@ class PaperMetadataIngestionService:
                 if paper_author not in author_names:
                     logger.info("Creating author", extra={"author": paper_author})
                     author = Author(name=paper_author)
-                    authors.append(await self._database.author.create(author, session))
+                    authors.append(await self._db.author.create(author, session))
                 else:
                     index = author_names.index(paper_author)
                     authors.append(database_authors[index])

@@ -1,5 +1,8 @@
-from airflow.sdk import dag
+from airflow.sdk import chain, dag
 from dags.datasource.tasks.category_ingestion_task import ingest_categories_task
+from dags.datasource.tasks.domain_ingestion_state_task import (
+    domain_ingestion_state_task,
+)
 from pendulum import datetime
 
 from common.constants import DataSource
@@ -11,6 +14,7 @@ logger = LoggerManager.get_logger(__name__)
 @dag(
     start_date=datetime(2026, 1, 1),
     catchup=False,
+    schedule="@monthly",
     tags=["category_ingestion"],
 )
 def category_ingestion_dag():
@@ -18,11 +22,10 @@ def category_ingestion_dag():
 
     Schedules the task to run once a month.
     """
-    for datasource_type in DataSource:
-        try:
-            ingest_categories_task(datasource_type=datasource_type.value)
-        except Exception as e:
-            logger.error("Error running category ingestion task", exc_info=e)
+    chain(
+        [ingest_categories_task(datasource_type=DataSource.ARXIV.value)],
+        [domain_ingestion_state_task(datasource_type=DataSource.ARXIV.value)],
+    )
 
 
 category_ingestion_dag()

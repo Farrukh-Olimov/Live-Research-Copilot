@@ -33,6 +33,8 @@ class CategoryFetcherFactory:
         Raises:
             KeyError: If the datasource_type type is unknown.
         """
-        if datasource_type == DataSource.ARXIV:
-            return ArxivCategoryFetcher(http_client, datasource_uuid)
-        raise KeyError(f"Unknown datasource type: {datasource_type}")
+        match datasource_type:
+            case DataSource.ARXIV:
+                return ArxivCategoryFetcher(http_client, datasource_uuid)
+            case _:
+                raise KeyError(f"Unknown datasource type: {datasource_type}")

@@ -42,7 +42,7 @@ async def test_category_ingestion_single_subject(
     async with async_session_factory() as session:
         async with session:
             await base_repository.create(datasource, session)
-            domain = await service._database.domain.get_by_code(
+            domain = await service._db.domain.get_by_code(
                 subject.domain.code, datasource_uuid, session
             )
 
@@ -50,16 +50,13 @@ async def test_category_ingestion_single_subject(
             assert domain.code == "cs"
             assert domain.name == "Computer Science"
 
-            subject_1 = await service._database.subject.get_by_code(
-                subject.code, session
-            )
+            subject_1 = await service._db.subject.get_by_code(subject.code, session)
             await session.commit()
 
             assert subject_1 is not None
             assert subject_1.code == "cs.AI"
             assert subject_1.name == "Artificial Intelligence"
             assert subject_1.domain_id == domain.id
-
             await base_repository.delete(datasource, session)
     await service.delete_subject_and_domain(subject)
 
@@ -98,22 +95,18 @@ async def test_category_ingestion_dubplicate_subject(
     async with async_session_factory() as session:
         async with session:
             await base_repository.create(datasource, session)
-            domain1 = await service._database.domain.get_by_code(
+            domain1 = await service._db.domain.get_by_code(
                 subject.domain.code, datasource_uuid, session
             )
-            subject1 = await service._database.subject.get_by_code(
-                subject.code, session
-            )
+            subject1 = await service._db.subject.get_by_code(subject.code, session)
             await session.commit()
 
             await service.ingest_subject(subject)
 
-            domain2 = await service._database.domain.get_by_code(
+            domain2 = await service._db.domain.get_by_code(
                 subject.domain.code, datasource_uuid, session
             )
-            subject2 = await service._database.subject.get_by_code(
-                subject.code, session
-            )
+            subject2 = await service._db.subject.get_by_code(subject.code, session)
             await session.commit()
 
             assert domain1 and domain2, "Expected domains to be non empty"
@@ -175,23 +168,20 @@ async def test_category_ingestion_batch(
         async with session:
             await base_repository.create(datasource, session)
             for i, subject in enumerate(subjects):
-                domain = await service._database.domain.get_by_code(
+                domain = await service._db.domain.get_by_code(
                     subject.domain.code, datasource_uuid, session
                 )
                 assert domain is not None
                 assert domain.code == "cs"
                 assert domain.name == "Computer Science"
 
-                subject_1 = await service._database.subject.get_by_code(
-                    subject.code, session
-                )
+                subject_1 = await service._db.subject.get_by_code(subject.code, session)
                 assert subject_1 is not None
                 assert subject_1.code == subject_samples[i]["code"]
                 assert subject_1.name == subject_samples[i]["name"]
                 await session.commit()
-
                 await service.delete_subject(subject_1)
-            await service._database.domain.delete_domain(domain, session)
+            await service._db.domain.delete_domain(domain, session)
             await base_repository.delete(datasource, session)
             await session.commit()
 

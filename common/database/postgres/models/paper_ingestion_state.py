@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import UUID, Boolean, Date, ForeignKey, Sequence, Integer
+from sqlalchemy import UUID, Boolean, Date, ForeignKey, Integer, Sequence
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import BaseModel

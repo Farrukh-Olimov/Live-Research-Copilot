@@ -36,3 +36,11 @@ class DomainRepository(BaseRepository[Domain]):
     async def delete_domain(self, domain: Domain, session: AsyncSession):
         """Deletes a domain."""
         await session.delete(domain)
+
+    async def get_domains_by_datasource_uuid(
+        self, datasource_uuid: UUID, session: AsyncSession
+    ) -> List[Domain]:
+        """List domains by datasource UUID."""
+        query = select(Domain).where(Domain.datasource_id == datasource_uuid)
+        rows = await session.execute(query)
+        return rows.scalars().all()
