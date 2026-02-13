@@ -11,17 +11,21 @@ class CategoryFetcherFactory:
     @overload
     @staticmethod
     def create(
-        datasource_type: DataSource.ARXIV, datasource_uuid: UUID, client: AsyncClient
+        datasource_type: DataSource.ARXIV,
+        datasource_uuid: UUID,
+        http_client: AsyncClient,
     ) -> ArxivCategoryFetcher: ...
 
     @staticmethod
-    def create(datasource_type: DataSource, datasource_uuid: UUID, client: AsyncClient):
+    def create(
+        datasource_type: DataSource, datasource_uuid: UUID, http_client: AsyncClient
+    ):
         """Creates a category fetcher object based on the ingestion type.
 
         Args:
             datasource_type (DataSource): The ingestion to create base on datasource.
             datasource_uuid (UUID): The uuid of the datasource.
-            client (AsyncClient): The httpx client to use for fetching categories.
+            http_client (AsyncClient): The httpx client to use for fetching categories.
 
         Returns:
             CategoryFetcher: The category fetcher object.
@@ -29,6 +33,8 @@ class CategoryFetcherFactory:
         Raises:
             KeyError: If the datasource_type type is unknown.
         """
-        if datasource_type == DataSource.ARXIV:
-            return ArxivCategoryFetcher(client, datasource_uuid)
-        raise KeyError(f"Unknown datasource type: {datasource_type}")
+        match datasource_type:
+            case DataSource.ARXIV:
+                return ArxivCategoryFetcher(http_client, datasource_uuid)
+            case _:
+                raise KeyError(f"Unknown datasource type: {datasource_type}")

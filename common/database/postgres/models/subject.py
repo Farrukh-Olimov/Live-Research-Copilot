@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, List
 from uuid import uuid4
 
-from sqlalchemy import UUID, ForeignKey, String
+from sqlalchemy import UUID, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import BaseModel
@@ -23,7 +23,7 @@ class Subject(BaseModel):
     )
 
     code: Mapped[str] = mapped_column(
-        String(25),
+        Text,
         nullable=False,
         comment="Code for the primary subject, e.g., CS, Physics",
     )
@@ -38,10 +38,11 @@ class Subject(BaseModel):
     )
 
     name: Mapped[str] = mapped_column(
-        String(25),
+        Text,
         nullable=False,
         comment="Name of the primary subject, e.g., Physics",
     )
     paper_subjects: Mapped[List["PaperSubject"]] = relationship(
-        back_populates="subject"
+        back_populates="subject",
+        lazy="selectin",
     )

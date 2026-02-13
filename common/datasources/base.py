@@ -1,7 +1,16 @@
 # pragma: no cover
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, AsyncIterable, ClassVar, Dict, Generic, Optional, TypeVar
+from typing import (
+    Any,
+    AsyncIterator,
+    ClassVar,
+    Dict,
+    Generic,
+    List,
+    Optional,
+    TypeVar,
+)
 from uuid import UUID
 
 from httpx import AsyncClient
@@ -32,7 +41,7 @@ class CategoryFetcher(ABC):
         self._datasource_uuid = datasource_uuid
 
     @abstractmethod
-    async def fetch_subjects(self) -> AsyncIterable[SubjectSchema]:
+    async def fetch_subjects(self) -> AsyncIterator[SubjectSchema]:
         """Return all subjects supported by the datasource."""
         raise NotImplementedError
 
@@ -51,7 +60,7 @@ class PaperMetadataParser(Generic[PaperSchemaType], ABC):
     @abstractmethod
     def parse(
         self, raw_data: Any, primary_subject_code: str, domain_code: str
-    ) -> PaperSchemaType:
+    ) -> List[PaperSchemaType]:
         """Parses raw data from the datasource into a PaperSchemaType object.
 
         Args:
@@ -124,7 +133,7 @@ class PaperMetadataFetcher(Generic[PaperSchemaType], ABC):
         subject_code: str,
         from_date: datetime,
         until_date: datetime,
-    ) -> AsyncIterable[PaperSchemaType]:
+    ) -> AsyncIterator[PaperSchemaType]:
         """Fetches paper metadata from the datasource.
 
         Args:
@@ -133,10 +142,10 @@ class PaperMetadataFetcher(Generic[PaperSchemaType], ABC):
             until_date (datetime): The until date to query.
 
         Returns:
-            AsyncIterable[PaperSchemaT]: An asynchronous iterable
+            AsyncIterator[PaperSchemaT]: An asynchronous iterator
                 of paper metadata objects.
         """
-        pass
+        yield PaperSchemaType
 
 
 class PaperMetadataIngestion(Generic[PaperSchemaType], ABC):
@@ -157,7 +166,7 @@ class PaperMetadataIngestion(Generic[PaperSchemaType], ABC):
     @abstractmethod
     async def run(
         self, subject: str, from_date: datetime, until_date: datetime
-    ) -> AsyncIterable[PaperMetadataRecord]:
+    ) -> AsyncIterator[PaperMetadataRecord]:
         """Runs the paper metadata ingestion given subject and date range.
 
         Args:

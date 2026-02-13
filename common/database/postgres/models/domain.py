@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, List
 from uuid import uuid4
 
-from sqlalchemy import UUID, ForeignKey, String, UniqueConstraint
+from sqlalchemy import UUID, ForeignKey, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import BaseModel
@@ -9,6 +9,7 @@ from .base import BaseModel
 if TYPE_CHECKING:
     from .datasource import Datasource
     from .paper import Paper
+    from .paper_ingestion_state import PaperIngestionState
     from .subject import Subject
 
 
@@ -25,7 +26,7 @@ class Domain(BaseModel):
     )
 
     code: Mapped[str] = mapped_column(
-        String(25), nullable=True, comment="Code for the domain, e.g., CS, Physics"
+        Text, nullable=True, comment="Code for the domain, e.g., CS, Physics"
     )
     datasource_id: Mapped[UUID] = mapped_column(
         ForeignKey("datasources.id"),
@@ -38,12 +39,16 @@ class Domain(BaseModel):
     )
 
     name: Mapped[str] = mapped_column(
-        String(25),
+        Text,
         nullable=False,
         comment="Name of the domain, e.g., Computer Science, Physics",
     )
 
     papers: Mapped[List["Paper"]] = relationship(
+        back_populates="domain",
+    )
+
+    paper_ingestion_states: Mapped["PaperIngestionState"] = relationship(
         back_populates="domain",
     )
 

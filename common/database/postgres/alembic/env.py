@@ -79,7 +79,7 @@ def create_database(url):
             {"database": database},
         ).scalar()
 
-        if not exists:
+        if exists is None:
             conn.execute(text(f"CREATE DATABASE {database}"))
             logger.info(f"Database {database} created")
         else:

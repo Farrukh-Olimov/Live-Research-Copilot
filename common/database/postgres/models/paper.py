@@ -2,7 +2,7 @@ from datetime import date
 from typing import TYPE_CHECKING, List
 from uuid import uuid4
 
-from sqlalchemy import UUID, Date, ForeignKey, String
+from sqlalchemy import UUID, Date, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import BaseModel, TimestampModel
@@ -25,38 +25,13 @@ class Paper(BaseModel, TimestampModel):
         primary_key=True,
         comment="Unique identifier for the paper",
     )
+    abstract: Mapped[str] = mapped_column(
+        Text, nullable=False, comment="Abstract of the paper"
+    )
+
     authors: Mapped[List["Author"]] = relationship(
         secondary=paper_authors,
         back_populates="publications",
-    )
-
-    main_author_id: Mapped[UUID] = mapped_column(
-        UUID(as_uuid=True),
-        ForeignKey("authors.id"),
-        comment="ID of the main/primary author of the paper",
-    )
-    main_author: Mapped["Author"] = relationship(
-        foreign_keys=[main_author_id],
-        back_populates="primary_papers",
-    )
-
-    domain_id: Mapped[UUID] = mapped_column(
-        UUID(as_uuid=True),
-        ForeignKey("domains.id"),
-        comment=(
-            "ID of the high-level academic domain (e.g., Computer Science, Physics)"
-        ),
-    )
-    domain: Mapped["Domain"] = relationship(
-        foreign_keys=[domain_id],
-        back_populates="papers",
-    )
-
-    paper_subjects: Mapped[List["PaperSubject"]] = relationship(
-        back_populates="paper",
-    )
-    publish_date: Mapped[date] = mapped_column(
-        Date, nullable=False, comment="Date of publication"
     )
 
     datasource_id: Mapped[UUID] = mapped_column(
@@ -71,10 +46,42 @@ class Paper(BaseModel, TimestampModel):
         foreign_keys=[datasource_id],
         back_populates="papers",
     )
-    title: Mapped[str] = mapped_column(
-        String, nullable=False, comment="Title of the paper"
+
+    domain_id: Mapped[UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("domains.id"),
+        comment=(
+            "ID of the high-level academic domain (e.g., Computer Science, Physics)"
+        ),
     )
-    url: Mapped[str] = mapped_column(
+    domain: Mapped["Domain"] = relationship(
+        foreign_keys=[domain_id],
+        back_populates="papers",
+    )
+
+    main_author_id: Mapped[UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("authors.id"),
+        comment="ID of the main/primary author of the paper",
+    )
+    main_author: Mapped["Author"] = relationship(
+        foreign_keys=[main_author_id],
+        back_populates="primary_papers",
+    )
+
+    paper_subjects: Mapped[List["PaperSubject"]] = relationship(
+        back_populates="paper",
+        lazy="selectin",
+    )
+    publish_date: Mapped[date] = mapped_column(
+        Date, nullable=False, comment="Date of publication"
+    )
+
+    title: Mapped[str] = mapped_column(
+        Text, nullable=False, comment="Title of the paper"
+    )
+
+    paper_identifier: Mapped[str] = mapped_column(
         String,
         nullable=False,
         unique=True,

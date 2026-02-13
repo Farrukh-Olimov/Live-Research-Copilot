@@ -1,9 +1,9 @@
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy import UUID, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from common.database.postgres.models.domain import Domain
+from common.database.postgres.models import Domain
 
 from .base_repository import BaseRepository
 
@@ -15,23 +15,9 @@ class DomainRepository(BaseRepository[Domain]):
         """Initializes a DomainRepository object."""
         super().__init__(Domain)
 
-    async def create(self, domain: Domain, session: AsyncSession) -> Domain:
-        """Creates a domain."""
-        session.add(domain)
-        await session.flush()
-        return domain
-
-    async def create_many(
-        self, domains: List[Domain], session: AsyncSession
-    ) -> List[Domain]:
-        """Creates batch of domains."""
-        session.add_all(domains)
-        await session.flush()
-        return domains
-
     async def get_by_code(
         self, code: str, datasource_uuid: UUID, session: AsyncSession
-    ) -> Domain:
+    ) -> Optional[Domain]:
         """Returns a domain by code."""
         query = select(Domain).filter_by(code=code, datasource_id=datasource_uuid)
         rows = await session.execute(query)
@@ -50,3 +36,11 @@ class DomainRepository(BaseRepository[Domain]):
     async def delete_domain(self, domain: Domain, session: AsyncSession):
         """Deletes a domain."""
         await session.delete(domain)
+
+    async def get_domains_by_datasource_uuid(
+        self, datasource_uuid: UUID, session: AsyncSession
+    ) -> List[Domain]:
+        """List domains by datasource UUID."""
+        query = select(Domain).where(Domain.datasource_id == datasource_uuid)
+        rows = await session.execute(query)
+        return rows.scalars().all()

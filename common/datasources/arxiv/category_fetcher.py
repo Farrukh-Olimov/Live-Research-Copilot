@@ -1,4 +1,4 @@
-from typing import AsyncIterable, ClassVar, Dict, Optional
+from typing import AsyncIterator, ClassVar, Dict, Optional
 import xml.etree.ElementTree as ET
 
 from common.datasources.arxiv.const import DATASOURCE_NAME, NAMESPACE
@@ -16,14 +16,14 @@ class ArxivCategoryFetcher(CategoryFetcher):
     TIMEOUT = 30
     URL = "https://oaipmh.arxiv.org/oai"
 
-    async def fetch_subjects(self) -> AsyncIterable[SubjectSchema]:
+    async def fetch_subjects(self) -> AsyncIterator[SubjectSchema]:
         """Fetches all subjects supported by the arXiv datasource.
 
         Yields an asynchronous iterable of SubjectSchema objects,
         each representing a subject supported by arXiv.
 
         Returns:
-            AsyncIterable[SubjectSchema]: An asynchronous iterable
+            AsyncIterator[SubjectSchema]: An asynchronous iterator
                 of all subjects supported by arXiv.
         """
         logger.info("Fetching categories from arXiv")
@@ -57,12 +57,12 @@ class ArxivCategoryFetcher(CategoryFetcher):
     def _parse_set(
         self, set_spec: str, set_name: str, domains: Dict[str, DomainSchema]
     ) -> Optional[SubjectSchema]:
-        """Parse a single set specification from arXiv into a SubjectSchema object.
+        """Parse a single set specification from arXiv into a SubjectSchema.
 
         Args:
-            set_spec (str): The set specification from arXiv, e.g., "physics:hep-th".
-            set_name (str): The name of the set, e.g., "High-Energy Physics - Theory".
-            domains (Dict[str, DomainSchema]): A dictionary of all known domains.
+            set_spec (str): The set specification from arXiv..
+            set_name (str): The name of the set..
+            domains (Dict[str, DomainSchema]): A dictionary of domains..
 
         Returns:
             Optional[SubjectSchema]: The parsed subject schema object,
