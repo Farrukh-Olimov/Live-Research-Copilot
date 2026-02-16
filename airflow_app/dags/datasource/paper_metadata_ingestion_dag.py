@@ -16,11 +16,7 @@ logger = LoggerManager.get_logger(__name__)
 )
 def paper_metadata_ingestion_dag():
     """Run paper metadata ingestion task per datasources."""
-    for datasource in DataSource:
-        try:
-            ingest_papers_task(datasource)
-        except Exception as e:
-            logger.error("Error running paper metadata ingestion task", exc_info=e)
-
+    logger.info("Running paper metadata ingestion task")
+    
 
 # paper_metadata_ingestion_dag()

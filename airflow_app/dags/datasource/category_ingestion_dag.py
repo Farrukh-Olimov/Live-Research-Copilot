@@ -1,6 +1,6 @@
 from airflow.sdk import chain, dag
 from dags.datasource.tasks.category_ingestion_task import ingest_categories_task
-from dags.datasource.tasks.domain_ingestion_state_task import (
+from airflow_app.dags.datasource.tasks.domain_state_ingestion_task import (
     domain_ingestion_state_task,
 )
 from pendulum import datetime
