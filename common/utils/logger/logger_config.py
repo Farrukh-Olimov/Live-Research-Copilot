@@ -1,4 +1,5 @@
 import logging
+import sys
 from threading import Lock
 from typing import ClassVar
 
@@ -75,7 +76,7 @@ class LoggerManager:
 
                 # Console Handlers
                 if log_to_console:
-                    console_hander = logging.StreamHandler()
+                    console_hander = logging.StreamHandler(sys.stdout)
                     console_hander.setLevel(logging.DEBUG)
                     console_hander.setFormatter(
                         console_fmt if not structured_format else formatter
