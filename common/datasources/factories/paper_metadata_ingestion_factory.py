@@ -31,7 +31,8 @@ class PaperMetadataIngestionFactory:
         Raises:
             KeyError: If the datasource_type type is unknown.
         """
-        if datasource_type == DataSource.ARXIV:
-            return ArxivPaperMetadataIngestion(client)
-        else:
-            raise KeyError(f"Unknown datasource type: {datasource_type}")
+        match datasource_type:
+            case DataSource.ARXIV:
+                return ArxivPaperMetadataIngestion(client)
+            case _:
+                raise KeyError(f"Unknown datasource type: {datasource_type}")
