@@ -1,7 +1,7 @@
 from airflow.sdk import chain, dag
-from dags.datasource.tasks.category_ingestion_task import ingest_categories_task
-from airflow_app.dags.datasource.tasks.domain_state_ingestion_task import (
+from dags.datasource.tasks.category_ingestion_task import (
     domain_ingestion_state_task,
+    ingest_categories_task,
 )
 from pendulum import datetime
 
@@ -23,9 +23,10 @@ def category_ingestion_dag():
     Schedules the task to run once a month.
     """
     chain(
-        [ingest_categories_task(datasource_type=DataSource.ARXIV.value)],
-        [domain_ingestion_state_task(datasource_type=DataSource.ARXIV.value)],
+        [ingest_categories_task(datasource_type=DataSource.ARXIV)],
+        [domain_ingestion_state_task(datasource_type=DataSource.ARXIV)],
     )
 
 
 category_ingestion_dag()
+

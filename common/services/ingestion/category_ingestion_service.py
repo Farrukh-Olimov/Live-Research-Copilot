@@ -40,21 +40,12 @@ class CategoryIngestionService:
                 )
 
                 if not domain:
-                    try:
-                        domain = Domain(
-                            code=subject.domain.code,
-                            name=subject.domain.name,
-                            datasource_id=subject.domain.datasource_uuid,
-                        )
-                        domain = await self._db.domain.create(domain, session)
-                    except IntegrityError:
-                        logger.warning(
-                            "Domain code already exists",
-                            extra={"domain": subject.domain},
-                        )
-                        domain = await self._db.domain.get_by_code(
-                            subject.domain.code, subject.domain.datasource_uuid, session
-                        )
+                    domain = Domain(
+                        code=subject.domain.code,
+                        name=subject.domain.name,
+                        datasource_id=subject.domain.datasource_uuid,
+                    )
+                    domain = await self._db.domain.create(domain, session)
 
                 existing_subject = await self._db.subject.get_by_code(
                     subject.code, session
@@ -100,7 +91,6 @@ class CategoryIngestionService:
                     for domain in existing_domains
                 }
 
-                new_domains = []
                 for subject in subjects:
                     domain_code = subject.domain.code
                     datasource_uuid = subject.domain.datasource_uuid
@@ -110,11 +100,8 @@ class CategoryIngestionService:
                             name=subject.domain.name,
                             datasource_id=datasource_uuid,
                         )
-                        new_domains.append(domain)
+                        domain = await self._db.domain.create(domain, session)
                         domain_map[(domain_code, datasource_uuid)] = domain
-
-                if new_domains:
-                    await self._db.domain.create_many(new_domains, session)
 
                 subject_codes = {subject.code for subject in subjects}
                 existing_subjects = await self._db.subject.get_by_codes(
@@ -122,7 +109,6 @@ class CategoryIngestionService:
                 )
                 subject_map = {subject.code: subject for subject in existing_subjects}
 
-                new_subjects = []
                 for subject in subjects:
                     if subject.code not in subject_map:
                         domain_code = subject.domain.code
@@ -133,11 +119,8 @@ class CategoryIngestionService:
                             name=subject.name,
                             domain_id=domain.id,
                         )
-                        new_subjects.append(subject)
+                        subject = await self._db.subject.create(subject, session)
                         subject_map[subject.code] = subject
-
-                if new_subjects:
-                    await self._db.subject.create_many(new_subjects, session)
 
     async def delete_subject(self, subject: SubjectSchema):
         """Removes only a subject from the database.

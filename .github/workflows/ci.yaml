@@ -38,6 +38,22 @@ jobs:
         poetry-version: ${{ fromJSON(vars.POETRY_VERSIONS) }}
         os: ${{ fromJSON(vars.OS_MATRIX) }}
     runs-on: ${{ matrix.os }}
+
+    services: 
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps: 
       - uses: actions/checkout@v4   
 
@@ -45,4 +61,10 @@ jobs:
         with: 
           python-version: ${{ matrix.python-version }}
           poetry-version: ${{ matrix.poetry-version }}
+        env:
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DATABASE_TEST: test_database
 

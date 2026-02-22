@@ -161,6 +161,6 @@ class ArxivPaperMetadataParser(PaperMetadataParser[ArxivPaperMetadataRecord]):
         resumption_token = None
         root = ET.fromstring(raw_data)
         token_el = root.find(".//oai:resumptionToken", NAMESPACE)
-        if token_el is not None:
+        if token_el is not None and token_el.text is not None:
             resumption_token = token_el.text.strip()
         return resumption_token
