@@ -1,5 +1,5 @@
 import os
-import asyncio
+
 from dotenv import load_dotenv
 import pytest_asyncio
 from sqlalchemy import text
@@ -14,6 +14,7 @@ load_dotenv(".env")
 
 
 def get_admin_url():
+    """Get the database URL using the environment variables."""
     return (
         "postgresql+asyncpg://"
         f"{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}"
@@ -23,6 +24,7 @@ def get_admin_url():
 
 
 def get_test_db_url():
+    """Get the database URL using the environment variables."""
     return (
         "postgresql+asyncpg://"
         f"{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}"
@@ -33,8 +35,11 @@ def get_test_db_url():
 
 @pytest_asyncio.fixture(scope="session", autouse=True)
 async def init_database():
+    """Initializes the global database connection."""
     database = os.getenv("POSTGRES_DATABASE_TEST")
-    admin_engine = create_async_engine(url=get_admin_url(), isolation_level="AUTOCOMMIT")
+    admin_engine = create_async_engine(
+        url=get_admin_url(), isolation_level="AUTOCOMMIT"
+    )
 
     # Create test DB if not exists
     async with admin_engine.connect() as conn:
@@ -67,11 +72,13 @@ async def init_database():
     async with admin_engine.connect() as conn:
         # Terminate all connections to test DB before dropping
         await conn.execute(
-            text("""
+            text(
+                """
                 SELECT pg_terminate_backend(pid)
                 FROM pg_stat_activity
                 WHERE datname = :database AND pid <> pg_backend_pid()
-            """),
+            """
+            ),
             {"database": database},
         )
         await conn.execute(text(f"DROP DATABASE IF EXISTS {database}"))
@@ -82,6 +89,7 @@ async def init_database():
 
 @pytest_asyncio.fixture(scope="function")
 async def async_engine(init_database):
+    """Returns an async SQLAlchemy engine."""
     engine = create_async_engine(
         get_test_db_url(),
         max_overflow=int(os.getenv("POSTGRES_MAX_OVERFLOW", 5)),
@@ -96,13 +104,15 @@ async def async_engine(init_database):
 
 @pytest_asyncio.fixture(scope="function")
 async def async_session_factory(async_engine):
+    """Returns an async SQLAlchemy session factory."""
     factory = async_sessionmaker(async_engine, expire_on_commit=False)
     yield factory
 
     # Clean up all data after each test
     async with factory() as session:
         await session.execute(
-            text("""
+            text(
+                """
                 TRUNCATE TABLE
                     paper_ingestion_state,
                     paper_authors,
@@ -112,6 +122,7 @@ async def async_session_factory(async_engine):
                     domains,
                     authors
                 RESTART IDENTITY CASCADE;
-            """)
+            """
+            )
         )
         await session.commit()

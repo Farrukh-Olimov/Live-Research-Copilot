@@ -22,7 +22,7 @@ def paper_metadata_ingestion_dag():
     logger.info("Running paper metadata ingestion task")
 
     ingestion_states = load_domain_ingestion_states()
-    subject_candidates = load_subject_to_ingest.expand(ingestion_state=ingestion_states)
+    load_subject_to_ingest.expand(ingestion_state=ingestion_states)
 
 
 # paper_metadata_ingestion_dag()

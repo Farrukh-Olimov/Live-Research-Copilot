@@ -29,4 +29,3 @@ def category_ingestion_dag():
 
 
 category_ingestion_dag()
-
