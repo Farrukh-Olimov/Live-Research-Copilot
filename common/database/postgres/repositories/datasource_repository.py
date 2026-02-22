@@ -2,13 +2,13 @@ from typing import Optional
 from uuid import UUID
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from common.constants.datasource import DataSource
 from common.database.postgres.models import Datasource
 
 from .base_repository import BaseRepository
-from sqlalchemy.exc import IntegrityError
 
 
 class DatasourceRepository(BaseRepository[Datasource]):

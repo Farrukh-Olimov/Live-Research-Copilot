@@ -187,6 +187,8 @@ class TestPaperMetadataIngestionService:
                 ),
                 session,
             )
+            await session.commit()
+
             created_paper = await self.ingest_service._ingest_one(
                 paper,
                 datasource.id,

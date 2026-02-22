@@ -38,26 +38,27 @@ async def test_category_ingestion_single_subject(
         },
     )
 
-    await service.ingest_subject(subject)
     async with async_session_factory() as session:
-        async with session:
-            await _db.datasource.create(datasource, session)
-            domain = await service._db.domain.get_by_code(
-                subject.domain.code, datasource_uuid, session
-            )
+        await _db.datasource.create(datasource, session)
+        await session.commit()
+        await service.ingest_subject(subject)
+        domain = await service._db.domain.get_by_code(
+            subject.domain.code, datasource_uuid, session
+        )
 
-            assert domain is not None
-            assert domain.code == "cs"
-            assert domain.name == "Computer Science"
+        assert domain is not None
+        assert domain.code == "cs"
+        assert domain.name == "Computer Science"
+        await session.commit()
 
-            subject_1 = await service._db.subject.get_by_code(subject.code, session)
-            await session.commit()
+        await service.ingest_subject(subject)
+        subject_1 = await service._db.subject.get_by_code(subject.code, session)
 
-            assert subject_1 is not None
-            assert subject_1.code == "cs.AI"
-            assert subject_1.name == "Artificial Intelligence"
-            assert subject_1.domain_id == domain.id
-            await _db.datasource.delete(datasource, session)
+        assert subject_1 is not None
+        assert subject_1.code == "cs.AI"
+        assert subject_1.name == "Artificial Intelligence"
+        assert subject_1.domain_id == domain.id
+        await _db.datasource.delete(datasource, session)
     await service.delete_subject_and_domain(subject)
 
 
@@ -91,10 +92,13 @@ async def test_category_ingestion_dubplicate_subject(
         },
     )
 
-    await service.ingest_subject(subject)
     async with async_session_factory() as session:
         async with session:
             await _db.datasource.create(datasource, session)
+            await session.commit()
+
+            await service.ingest_subject(subject)
+
             domain1 = await service._db.domain.get_by_code(
                 subject.domain.code, datasource_uuid, session
             )
@@ -162,11 +166,11 @@ async def test_category_ingestion_batch(
         for sample in subject_samples
     ]
 
-    await service.ingest_subjects_batch(subjects)
-
     async with async_session_factory() as session:
         async with session:
             await _db.datasource.create(datasource, session)
+            await session.commit()
+            await service.ingest_subjects_batch(subjects)
             for i, subject in enumerate(subjects):
                 domain = await service._db.domain.get_by_code(
                     subject.domain.code, datasource_uuid, session

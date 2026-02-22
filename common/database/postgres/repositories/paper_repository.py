@@ -2,8 +2,9 @@ from typing import List, Optional
 from uuid import UUID
 
 from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from common.database.postgres.models import Paper
 from common.database.postgres.models.relationships import PaperSubject
 

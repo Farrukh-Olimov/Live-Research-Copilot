@@ -1,8 +1,9 @@
 from typing import List, Optional
 
 from sqlalchemy import UUID, select
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from common.database.postgres.models import Domain
 
 from .base_repository import BaseRepository
