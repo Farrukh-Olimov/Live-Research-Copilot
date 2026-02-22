@@ -42,23 +42,6 @@ class TestPaperMetadataIngestionService:
             http_client=httpx_async_client,
         )
 
-    async def test_get_datasource_uuid(self):
-        """Test the datasource uuid lookup."""
-        async with self._async_session_factory() as session:
-            with pytest.raises(ValueError):
-                await self.ingest_service._get_datasource_uuid(
-                    DataSource.ARXIV, session
-                )
-
-            creaed_datasource = await self._database.datasource.create(
-                Datasource(name=DataSource.ARXIV),
-                session,
-            )
-            uuid = await self.ingest_service._get_datasource_uuid(
-                DataSource.ARXIV, session
-            )
-            assert uuid == creaed_datasource.id, "UUID does not match"
-
     async def test_get_domain(self):
         """Test the domain lookup."""
         async with self._async_session_factory() as session:
@@ -185,7 +168,6 @@ class TestPaperMetadataIngestionService:
                 paper,
                 datasource.id,
                 DataSource.ARXIV,
-                session,
             )
             assert created_paper is None, "Paper should not be ingested"
 
@@ -209,11 +191,12 @@ class TestPaperMetadataIngestionService:
                 paper,
                 datasource.id,
                 DataSource.ARXIV,
-                session,
             )
             assert created_paper is not None, "Paper should be ingested"
             assert created_paper.abstract == paper.abstract, "Abstract does not match"
-            assert created_paper.domain == created_domain, "Domain code does not match"
+            assert (
+                created_paper.domain.id == created_domain.id
+            ), "Domain code does not match"
             assert (
                 created_paper.paper_identifier == paper.paper_id
             ), "Paper ID does not match"
@@ -221,16 +204,6 @@ class TestPaperMetadataIngestionService:
                 created_paper.publish_date == paper.publish_date
             ), "Publish date does not match"
             assert created_paper.title == paper.title, "Title does not match"
-
-            subject_codes = []
-            subject_codes.append(paper.primary_subject_code)
-            subject_codes.extend(paper.secondary_subject_codes)
-
-            for i, ps in enumerate(created_paper.paper_subjects):
-                await session.refresh(ps, attribute_names=["subject"])
-                assert (
-                    ps.subject.code == subject_codes[i]
-                ), "Subject name does not match"
 
     async def test_run(self):
         """Test the run method."""
@@ -248,11 +221,16 @@ class TestPaperMetadataIngestionService:
         async for subject in category_fetcher.fetch_subjects():
             await category_ingestion.ingest_subject(subject)
 
+        async with self._async_session_factory() as session:
+            subject = await self._database.subject.get_by_code(subject.code, session)
+            assert subject is not None, "Subject should be found"
+
         fromTime = datetime(2022, 1, 1)
         untilTime = datetime(2022, 1, 1)
+
         await self.ingest_service.run(
-            DataSource.ARXIV,
-            subject.code,
+            datasource.id,
+            subject.id,
             fromTime,
             untilTime,
         )

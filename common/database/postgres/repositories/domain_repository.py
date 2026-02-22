@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from sqlalchemy import UUID, select
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from sqlalchemy.exc import IntegrityError
 from common.database.postgres.models import Domain
 
 from .base_repository import BaseRepository
@@ -14,6 +14,21 @@ class DomainRepository(BaseRepository[Domain]):
     def __init__(self):
         """Initializes a DomainRepository object."""
         super().__init__(Domain)
+
+    async def create(self, model: Domain, session: AsyncSession) -> Domain:
+        """Creates a model."""
+        try:
+            async with session.begin_nested():
+                session.add(model)
+                await session.flush()
+                return model
+        except IntegrityError:
+            query = select(Domain).where(
+                Domain.datasource_id == model.datasource_id,
+                Domain.code == model.code,
+            )
+            result = await session.execute(query)
+            return result.scalar_one()
 
     async def get_by_code(
         self, code: str, datasource_uuid: UUID, session: AsyncSession

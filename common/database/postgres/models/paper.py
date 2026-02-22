@@ -45,6 +45,7 @@ class Paper(BaseModel, TimestampModel):
     datasource: Mapped["Datasource"] = relationship(
         foreign_keys=[datasource_id],
         back_populates="papers",
+        lazy="selectin",
     )
 
     domain_id: Mapped[UUID] = mapped_column(
@@ -57,6 +58,7 @@ class Paper(BaseModel, TimestampModel):
     domain: Mapped["Domain"] = relationship(
         foreign_keys=[domain_id],
         back_populates="papers",
+        lazy="selectin",
     )
 
     main_author_id: Mapped[UUID] = mapped_column(
@@ -71,7 +73,6 @@ class Paper(BaseModel, TimestampModel):
 
     paper_subjects: Mapped[List["PaperSubject"]] = relationship(
         back_populates="paper",
-        lazy="selectin",
     )
     publish_date: Mapped[date] = mapped_column(
         Date, nullable=False, comment="Date of publication"

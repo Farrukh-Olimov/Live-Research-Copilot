@@ -4,7 +4,7 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from common.database.postgres.models import Datasource
-from common.database.postgres.repositories.base_repository import BaseRepository
+from common.database.postgres.repositories import DatabaseRepository
 from common.datasources.schema import SubjectSchema
 from common.services.ingestion import CategoryIngestionService
 
@@ -25,7 +25,7 @@ async def test_category_ingestion_single_subject(
     datasource_uuid = uuid4()
     datasource = Datasource(id=datasource_uuid, name=datasource_uuid.hex)
 
-    base_repository = BaseRepository(Datasource)
+    _db = DatabaseRepository()
     service = CategoryIngestionService(async_session_factory)
 
     subject = SubjectSchema(
@@ -41,7 +41,7 @@ async def test_category_ingestion_single_subject(
     await service.ingest_subject(subject)
     async with async_session_factory() as session:
         async with session:
-            await base_repository.create(datasource, session)
+            await _db.datasource.create(datasource, session)
             domain = await service._db.domain.get_by_code(
                 subject.domain.code, datasource_uuid, session
             )
@@ -57,7 +57,7 @@ async def test_category_ingestion_single_subject(
             assert subject_1.code == "cs.AI"
             assert subject_1.name == "Artificial Intelligence"
             assert subject_1.domain_id == domain.id
-            await base_repository.delete(datasource, session)
+            await _db.datasource.delete(datasource, session)
     await service.delete_subject_and_domain(subject)
 
 
@@ -78,7 +78,7 @@ async def test_category_ingestion_dubplicate_subject(
     datasource_uuid = uuid4()
     datasource = Datasource(id=datasource_uuid, name=datasource_uuid.hex)
 
-    base_repository = BaseRepository(Datasource)
+    _db = DatabaseRepository()
     service = CategoryIngestionService(async_session_factory)
 
     subject = SubjectSchema(
@@ -94,7 +94,7 @@ async def test_category_ingestion_dubplicate_subject(
     await service.ingest_subject(subject)
     async with async_session_factory() as session:
         async with session:
-            await base_repository.create(datasource, session)
+            await _db.datasource.create(datasource, session)
             domain1 = await service._db.domain.get_by_code(
                 subject.domain.code, datasource_uuid, session
             )
@@ -124,7 +124,7 @@ async def test_category_ingestion_dubplicate_subject(
                 subject1.domain_id == subject2.domain_id
             ), "Expected domains to be the same"
 
-            await base_repository.delete(datasource, session)
+            await _db.datasource.delete(datasource, session)
     await service.delete_subject_and_domain(subject)
 
 
@@ -143,7 +143,7 @@ async def test_category_ingestion_batch(
     datasource_uuid = uuid4()
     datasource = Datasource(id=datasource_uuid, name=datasource_uuid.hex)
 
-    base_repository = BaseRepository(Datasource)
+    _db = DatabaseRepository()
     service = CategoryIngestionService(async_session_factory)
 
     subject_samples = [
@@ -166,7 +166,7 @@ async def test_category_ingestion_batch(
 
     async with async_session_factory() as session:
         async with session:
-            await base_repository.create(datasource, session)
+            await _db.datasource.create(datasource, session)
             for i, subject in enumerate(subjects):
                 domain = await service._db.domain.get_by_code(
                     subject.domain.code, datasource_uuid, session
@@ -182,7 +182,7 @@ async def test_category_ingestion_batch(
                 await session.commit()
                 await service.delete_subject(subject_1)
             await service._db.domain.delete_domain(domain, session)
-            await base_repository.delete(datasource, session)
+            await _db.datasource.delete(datasource, session)
             await session.commit()
 
 

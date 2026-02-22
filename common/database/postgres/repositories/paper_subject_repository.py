@@ -14,6 +14,8 @@ class PaperSubjectRepository(BaseRepository[PaperSubject]):
         """Initializes a PaperSubjectRepository object."""
         super().__init__(PaperSubject)
 
+    
+
     async def add_subject_to_paper(
         self, paper_subject: PaperSubject, session: AsyncSession
     ):

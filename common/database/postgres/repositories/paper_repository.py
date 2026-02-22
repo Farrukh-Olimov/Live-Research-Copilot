@@ -3,7 +3,7 @@ from uuid import UUID
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from sqlalchemy.exc import IntegrityError
 from common.database.postgres.models import Paper
 from common.database.postgres.models.relationships import PaperSubject
 
@@ -19,6 +19,23 @@ class PaperRepository(BaseRepository[Paper]):
         Calls the parent's __init__ with Paper as the model.
         """
         super().__init__(Paper)
+
+    async def create(self, model: Paper, session: AsyncSession) -> Paper:
+        """Creates a model."""
+        try:
+            async with session.begin_nested():
+                session.add(model)
+                await session.flush()
+                return model
+        except IntegrityError:
+            query = select(Paper).where(
+                Paper.domain_id == model.domain_id,
+                Paper.datasource_id == model.datasource_id,
+                Paper.paper_identifier == model.paper_identifier,
+                Paper.title == model.title,
+            )
+            result = await session.execute(query)
+            return result.scalar_one()
 
     async def get_by_title(self, title: str, session: AsyncSession) -> Optional[Paper]:
         """Get a paper by title."""

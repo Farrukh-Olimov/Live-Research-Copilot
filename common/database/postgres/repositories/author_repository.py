@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from sqlalchemy.exc import IntegrityError
 from common.database.postgres.models import Author
 
 from .base_repository import BaseRepository
@@ -17,6 +17,18 @@ class AuthorRespotitory(BaseRepository[Author]):
         Calls the parent's __init__ with Author as the model.
         """
         super().__init__(Author)
+
+    async def create(self, model: Author, session: AsyncSession) -> Author:
+        """Creates a model."""
+        try:
+            async with session.begin_nested():
+                session.add(model)
+                await session.flush()
+                return model
+        except IntegrityError:
+            query = select(Author).where(Author.name == model.name)
+            result = await session.execute(query)
+            return result.scalar_one()
 
     async def get_by_name(self, name: str, session: AsyncSession) -> Optional[Author]:
         """Returns the Author with the given name.

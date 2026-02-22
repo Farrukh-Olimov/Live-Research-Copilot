@@ -35,7 +35,6 @@ def init_database():
             pool_recycle=int(os.getenv("POSTGRES_POOL_RECYCLE", 3600)),
         )
 
-    if _async_session_factory is None:
         _async_session_factory = async_sessionmaker(
             _async_engine, expire_on_commit=False
         )
@@ -66,6 +65,8 @@ async def get_session() -> AsyncGenerator:
 async def cleanup():
     """Call on app shutdown."""
     global _async_engine
+    global _async_session_factory
     if _async_engine:
         await _async_engine.dispose()
         _async_engine = None
+        _async_session_factory = None
