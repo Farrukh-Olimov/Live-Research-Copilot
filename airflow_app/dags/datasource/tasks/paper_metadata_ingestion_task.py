@@ -23,6 +23,7 @@ LoggerManager._log_module = LOG_MODULES.AIRFLOW
     retry_exponential_backoff=True,
     max_retry_delay=timedelta(minutes=2),
     sla=timedelta(minutes=5),
+    execution_timeout=timedelta(minutes=5),
 )
 def load_domain_ingestion_states() -> List[PaperIngestionStateRecord]:
     """Loads domain ingestion states for a all datasources.
@@ -78,6 +79,7 @@ def load_domain_ingestion_states() -> List[PaperIngestionStateRecord]:
     retry_exponential_backoff=True,
     max_retry_delay=timedelta(minutes=2),
     sla=timedelta(minutes=5),
+    execution_timeout=timedelta(minutes=5),
 )
 def load_subject_to_ingest(
     ingestion_state: PaperIngestionStateRecord,
@@ -142,6 +144,7 @@ def load_subject_to_ingest(
     retry_exponential_backoff=True,
     max_retry_delay=timedelta(minutes=2),
     sla=timedelta(minutes=5),
+    execution_timeout=timedelta(minutes=5),
 )
 def flatten(records) -> List:
     """Flatten a list of records."""
@@ -168,6 +171,7 @@ def flatten(records) -> List:
     retry_exponential_backoff=True,
     max_retry_delay=timedelta(minutes=10),
     sla=timedelta(hours=2),
+    execution_timeout=timedelta(hours=4),
 )
 def ingest_papers_task(subject_record: SubjectIngestionRecord):
     """Runs the paper metadata ingestion task for the given datasource type.
@@ -265,6 +269,7 @@ def ingest_papers_task(subject_record: SubjectIngestionRecord):
     retry_exponential_backoff=True,
     max_retry_delay=timedelta(minutes=2),
     sla=timedelta(minutes=5),
+    execution_timeout=timedelta(minutes=5),
 )
 def update_domain_ingestion_states(ingestion_states: List[PaperIngestionStateRecord]):
     """Updates the domain ingestion states with the latest cursor dates.

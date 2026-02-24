@@ -21,6 +21,7 @@ LoggerManager._log_module = LOG_MODULES.AIRFLOW
     retry_exponential_backoff=True,
     max_retry_delay=timedelta(minutes=2),
     sla=timedelta(minutes=5),
+    execution_timeout=timedelta(minutes=5),
 )
 def ingest_categories_task(
     datasource_type: DataSource,
@@ -90,6 +91,7 @@ def ingest_categories_task(
     retry_exponential_backoff=True,
     max_retry_delay=timedelta(minutes=2),
     sla=timedelta(minutes=5),
+    execution_timeout=timedelta(minutes=5),
 )
 def domain_ingestion_state_task(datasource_type: DataSource):
     """Sets the domain ingestion state for a given datasource.
