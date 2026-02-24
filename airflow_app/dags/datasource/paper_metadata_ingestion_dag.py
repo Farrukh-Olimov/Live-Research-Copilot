@@ -1,12 +1,16 @@
 from airflow.sdk import dag
 from dags.datasource.tasks.paper_metadata_ingestion_task import (
-    ingest_papers_task,
+    flatten,
     load_domain_ingestion_states,
     load_subject_to_ingest,
+    ingest_papers_task,
+    update_domain_ingestion_states,
 )
 from pendulum import datetime
 
-from common.utils.logger.logger_config import LoggerManager
+from common.utils.logger.logger_config import LoggerManager, LOG_MODULES
+
+LoggerManager._log_module = LOG_MODULES.AIRFLOW
 
 logger = LoggerManager.get_logger(__name__)
 
@@ -22,15 +26,17 @@ def paper_metadata_ingestion_dag():
     logger.info("Running paper metadata ingestion task")
 
     ingestion_states = load_domain_ingestion_states()
-    load_subject_to_ingest.expand(ingestion_state=ingestion_states)
+    subject_candidates = load_subject_to_ingest.expand(ingestion_state=ingestion_states)
+    flattened_subject_candidates = flatten(subject_candidates)
+    ingested_states = ingest_papers_task.expand(
+        subject_record=flattened_subject_candidates
+    )
+    flattened_ingested_states = flatten(ingested_states)
+    update_domain_ingestion_states(ingestion_states=flattened_ingested_states)
 
 
-# paper_metadata_ingestion_dag()
+dag_variable = paper_metadata_ingestion_dag()
 
 if __name__ == "__main__":
-    ingestion_states = load_domain_ingestion_states()
-    for state in ingestion_states:
-        subject_candidates = load_subject_to_ingest(state)
-        for subject in subject_candidates:
-            ingestion_state = ingest_papers_task(subject)
-    print("here")
+    dag_variable.test()
+    print("hrer")

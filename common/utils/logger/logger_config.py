@@ -13,12 +13,20 @@ from .rotation import (
     SizeRotationConfig,
     TimeRotationConfig,
 )
+from typing import Literal
 from .rotation.base import BaseRotationConfig
+from enum import Enum
+
+
+class LOG_MODULES(Enum):
+    APP = "app"
+    AIRFLOW = "airflow"
 
 
 class LoggerManager:
     """Centralized logger configuration manager."""
 
+    _log_module: ClassVar[LOG_MODULES] = LOG_MODULES.APP
     _configured: ClassVar[bool] = False
     _lock: ClassVar[Lock] = Lock()
 
@@ -133,10 +141,16 @@ class LoggerManager:
         Returns:
             Configured logger instance
         """
-        if not cls._configured:
-            cls.configure()
+        if cls._log_module == LOG_MODULES.AIRFLOW:
+            from airflow.utils.log.logging_mixin import LoggingMixin
 
-        return logging.getLogger(name)
+            return LoggingMixin().log
+
+        elif cls._log_module == LOG_MODULES.APP:
+            if not cls._configured:
+                cls.configure()
+
+            return logging.getLogger(name)
 
     @classmethod
     def reset(cls) -> None:

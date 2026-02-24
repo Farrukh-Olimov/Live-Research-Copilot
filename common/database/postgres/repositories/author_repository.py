@@ -1,12 +1,15 @@
 from typing import List, Optional
-
+import asyncio
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from common.database.postgres.models import Author
 
 from .base_repository import BaseRepository
+from common.utils.logger.logger_config import LoggerManager
+
+logger = LoggerManager.get_logger(__name__)
 
 
 class AuthorRespotitory(BaseRepository[Author]):
@@ -21,15 +24,22 @@ class AuthorRespotitory(BaseRepository[Author]):
 
     async def create(self, model: Author, session: AsyncSession) -> Author:
         """Creates a model."""
-        try:
-            async with session.begin_nested():
-                session.add(model)
-                await session.flush()
-                return model
-        except IntegrityError:
-            query = select(Author).where(Author.name == model.name)
-            result = await session.execute(query)
-            return result.scalar_one()
+
+        stmt = (
+            insert(Author)
+            .values(name=model.name)
+            .on_conflict_do_nothing(index_elements=["name"])
+            .returning(Author)
+        )
+        result = await session.execute(stmt)
+        row = result.scalar_one_or_none()
+        if row is None:
+            result = await session.execute(
+                select(Author).where(Author.name == model.name)
+            )
+            row = result.scalar_one()
+
+        return row
 
     async def get_by_name(self, name: str, session: AsyncSession) -> Optional[Author]:
         """Returns the Author with the given name.

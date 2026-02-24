@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from sqlalchemy import UUID, select
+from sqlalchemy import UUID, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -57,3 +57,21 @@ class PaperIngestionStateRepository(BaseRepository[PaperIngestionState]):
         query = select(PaperIngestionState).where(PaperIngestionState.is_active)
         rows = await session.execute(query)
         return rows.scalars().all()
+
+    async def update_cursor_date(
+        self,
+        domain_id: UUID,
+        datasource_id: UUID,
+        cursor_date: str,
+        session: AsyncSession,
+    ):
+        """Update the cursor date for a specific domain."""
+        query = (
+            update(PaperIngestionState)
+            .where(
+                PaperIngestionState.domain_id == domain_id,
+                PaperIngestionState.datasource_id == datasource_id,
+            )
+            .values(cursor_date=cursor_date)
+        )
+        await session.execute(query)

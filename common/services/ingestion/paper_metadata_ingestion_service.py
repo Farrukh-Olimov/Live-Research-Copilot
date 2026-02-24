@@ -13,12 +13,13 @@ from common.database.postgres.repositories import DatabaseRepository
 from common.datasources.factories import PaperMetadataIngestionFactory
 from common.datasources.schema import PaperMetadataRecord
 from common.utils.logger.logger_config import LoggerManager
+from sqlalchemy.exc import DBAPIError
 
 logger = LoggerManager.get_logger(__name__)
 
 
 class PaperMetadataIngestionService:
-    INGESTION_BATCH_SIZE: ClassVar[int] = 100
+    INGESTION_BATCH_SIZE: ClassVar[int] = 20
 
     def __init__(
         self,
@@ -153,7 +154,7 @@ class PaperMetadataIngestionService:
                 )
 
                 authors = await self._get_or_create_authors(
-                    paper.authors, datasource_uuid, datasource_type, session
+                    paper.authors, datasource_uuid, datasource_type
                 )
                 if not authors:
                     return None
@@ -203,6 +204,7 @@ class PaperMetadataIngestionService:
             if len(jobs) >= self.INGESTION_BATCH_SIZE:
                 papers = await asyncio.gather(*jobs)
                 is_updated = is_updated or any(p is not None for p in papers)
+                jobs.clear()
 
         if jobs:
             papers = await asyncio.gather(*jobs)
@@ -314,7 +316,6 @@ class PaperMetadataIngestionService:
         paper_authors: List[str],
         datasource_uuid: UUID,
         datasource_type: DataSource,
-        session: AsyncSession,
     ) -> List[Author]:
         """Gets or creates authors in the database.
 
@@ -328,30 +329,35 @@ class PaperMetadataIngestionService:
             List[Author]: The authors found or created.
         """
         # Get Authors
-        database_authors = await self._db.author.get_by_names(paper_authors, session)
-        authors = []
+        database_authors = []
+        max_retry = 5
+        for paper_author in paper_authors:
+            for retry in range(max_retry):
+                async with self._db_session_factory() as session:
+                    async with session.begin():
+                        try:
+                            author = Author(name=paper_author)
+                            database_authors.append(
+                                await self._db.author.create(author, session)
+                            )
+                            break
+                        except DBAPIError as e:
+                            if "deadlock detected" in str(e) and retry < max_retry:
+                                logger.warning(
+                                    f"Deadlock detected, retrying (attempt {retry + 1}/{max_retry})",
+                                    exc_info=True,
+                                )
+                                await asyncio.sleep(1)
+                                continue
+                            break
+
         if len(database_authors) != len(paper_authors):
-            author_names = [author.name for author in database_authors]
-            for paper_author in paper_authors:
-                if paper_author in author_names:
-                    index = author_names.index(paper_author)
-                    authors.append(database_authors[index])
-                    continue
-
-                logger.info("Creating author", extra={"author": paper_author})
-                author = Author(name=paper_author)
-                authors.append(await self._db.author.create(author, session))
-
-        else:
-            authors = database_authors
-
-        if not authors:
             logger.error(
-                "No authors found",
+                "Error getting or creating authors",
                 extra={
                     "authors": paper_authors,
                     "datasource": datasource_type,
                     "datasource_uuid": datasource_uuid,
                 },
             )
-        return authors
+        return database_authors

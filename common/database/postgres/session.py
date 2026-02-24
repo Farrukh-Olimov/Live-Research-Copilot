@@ -29,10 +29,10 @@ def init_database():
         _async_engine = create_async_engine(
             ASYNC_DATABASE_URL,
             echo=False,
-            max_overflow=int(os.getenv("POSTGRES_MAX_OVERFLOW", 5)),
-            pool_size=int(os.getenv("POSTGRES_POOL_SIZE", 10)),
-            pool_timeout=int(os.getenv("POSTGRES_POOL_TIMEOUT", 60)),
-            pool_recycle=int(os.getenv("POSTGRES_POOL_RECYCLE", 3600)),
+            max_overflow=int(os.getenv("POSTGRES_MAX_OVERFLOW", 10)),
+            pool_size=int(os.getenv("POSTGRES_POOL_SIZE", 30)),
+            pool_timeout=int(os.getenv("POSTGRES_POOL_TIMEOUT", 120)),
+            pool_recycle=int(os.getenv("POSTGRES_POOL_RECYCLE", 1800)),
         )
 
         _async_session_factory = async_sessionmaker(

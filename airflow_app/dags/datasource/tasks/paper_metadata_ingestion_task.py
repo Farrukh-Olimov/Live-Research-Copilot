@@ -3,6 +3,7 @@ from datetime import timedelta
 from typing import List
 from uuid import UUID
 
+from airflow.sdk import task
 from dags.datasource.schema import PaperIngestionStateRecord, SubjectIngestionRecord
 from httpx import AsyncClient, Limits, Timeout
 
@@ -10,12 +11,12 @@ from common.database.postgres.repositories import DatabaseRepository
 from common.database.postgres.session import cleanup, get_session_factory, init_database
 from common.datasources.factories import PaperMetadataIngestionFactory
 from common.services.ingestion import PaperMetadataIngestionService
-from common.utils.logger.logger_config import LoggerManager
+from common.utils.logger.logger_config import LoggerManager, LOG_MODULES
 
-logger = LoggerManager.get_logger(__name__)
+LoggerManager._log_module = LOG_MODULES.AIRFLOW
 
 
-# @task
+@task
 def load_domain_ingestion_states() -> List[PaperIngestionStateRecord]:
     """Loads domain ingestion states for a all datasources.
 
@@ -26,6 +27,7 @@ def load_domain_ingestion_states() -> List[PaperIngestionStateRecord]:
         List[PaperIngestionStateRecord]: A list of domain ingestion states for the
             given datasource type.
     """
+    logger = LoggerManager.get_logger(__name__)
     logger.info("Loading domain ingestion states")
 
     async def _run_ingestion():
@@ -44,7 +46,7 @@ def load_domain_ingestion_states() -> List[PaperIngestionStateRecord]:
                             domain_uuid=UUID(str(domain_state.domain_id)),
                             cursor_date=domain_state.cursor_date,
                             is_active=bool(domain_state.is_active),
-                        )
+                        ).model_dump(mode="json")
                     )
         except Exception as e:
             logger.error(
@@ -63,8 +65,10 @@ def load_domain_ingestion_states() -> List[PaperIngestionStateRecord]:
     return asyncio.run(_run_ingestion())
 
 
-# @task
-def load_subject_to_ingest(ingestion_state: PaperIngestionStateRecord):
+@task
+def load_subject_to_ingest(
+    ingestion_state: PaperIngestionStateRecord,
+) -> List[SubjectIngestionRecord]:
     """Loads the subject to ingest given the ingestion state.
 
     Args:
@@ -75,15 +79,15 @@ def load_subject_to_ingest(ingestion_state: PaperIngestionStateRecord):
         List[SubjectIngestionRecord]: A list of subjects to ingest for the
             given ingestion state.
     """
+    logger = LoggerManager.get_logger(__name__)
+    logger.info("Loading subject to ingest", extra={"ingestion_state": ingestion_state})
 
     async def _run_ingestion(ingestion_state: PaperIngestionStateRecord):
-        logger.info(
-            "Loading subject to ingest", extra={"ingestion_state": ingestion_state}
-        )
+
         init_database()
         _async_session_factory = get_session_factory()
         _db = DatabaseRepository()
-        subject_records = []
+        subject_records: List[SubjectIngestionRecord] = []
         try:
             async with _async_session_factory() as session:
                 subjects = await _db.subject.get_by_domain_uuid(
@@ -97,7 +101,7 @@ def load_subject_to_ingest(ingestion_state: PaperIngestionStateRecord):
                             subject_uuid=UUID(str(subject.id)),
                             from_date=ingestion_state.cursor_date,
                             until_date=ingestion_state.cursor_date + timedelta(days=10),
-                        )
+                        ).model_dump(mode="json")
                     )
         except Exception:
             logger.error(
@@ -113,10 +117,33 @@ def load_subject_to_ingest(ingestion_state: PaperIngestionStateRecord):
             await cleanup()
         return subject_records
 
+    if ingestion_state is None:
+        return None
+    ingestion_state = PaperIngestionStateRecord.model_validate(ingestion_state)
     return asyncio.run(_run_ingestion(ingestion_state))
 
 
-# @task
+@task
+def flatten(records) -> List:
+    """Flatten a list of records."""
+    logger = LoggerManager.get_logger(__name__)
+
+    new_records = []
+    queue = []
+    for record in records:
+        queue.append(record)
+
+    while queue:
+        record = queue.pop()
+        if isinstance(record, list):
+            queue.extend(record)
+        elif record is not None:
+            new_records.append(record)
+    logger.info("Flattened records", extra={"count": len(new_records)})
+    return new_records
+
+
+@task
 def ingest_papers_task(subject_record: SubjectIngestionRecord):
     """Runs the paper metadata ingestion task for the given datasource type.
 
@@ -127,6 +154,8 @@ def ingest_papers_task(subject_record: SubjectIngestionRecord):
     Returns:
         None
     """
+    logger = LoggerManager.get_logger(__name__)
+    logger.info("Running paper ingestion task")
 
     async def _run_ingestion(subject_record: SubjectIngestionRecord):
         init_database()
@@ -170,7 +199,64 @@ def ingest_papers_task(subject_record: SubjectIngestionRecord):
                 domain_uuid=subject_record.domain_uuid,
                 cursor_date=subject_record.until_date,
                 is_active=True,
-            )
+                is_updated=True,
+            ).model_dump(mode="json")
         return ingestion_state
 
-    asyncio.run(_run_ingestion(subject_record))
+    if subject_record is None:
+        return None
+    subject_record = SubjectIngestionRecord.model_validate(subject_record)
+    return asyncio.run(_run_ingestion(subject_record))
+
+
+@task
+def update_domain_ingestion_states(ingestion_states: List[PaperIngestionStateRecord]):
+    logger = LoggerManager.get_logger(__name__)
+    logger.info("Updating domain ingestion states")
+
+    async def _run_ingestions(ingestion_states: List[PaperIngestionStateRecord]):
+        init_database()
+        _async_session_factory = get_session_factory()
+        _db = DatabaseRepository()
+
+        latest_states = {}
+        for state in ingestion_states:
+            if state.is_updated:
+                key = (state.datasource_uuid, state.domain_uuid)
+                value = state.cursor_date
+                if key not in latest_states:
+                    latest_states[key] = value
+                else:
+                    latest_states[key] = max(latest_states[key], value)
+
+        for (datasource_id, domain_id), value in latest_states.items():
+            try:
+                async with _async_session_factory() as session:
+                    async with session.begin():
+                        await _db.paper_ingestion_state.update_cursor_date(
+                            domain_id=domain_id,
+                            datasource_id=datasource_id,
+                            cursor_date=value,
+                            session=session,
+                        )
+            except Exception as e:
+                logger.error(
+                    "Error running domain ingestion task",
+                    exc_info=e,
+                )
+                await cleanup()
+                init_database()
+                _async_session_factory = get_session_factory()
+
+        await cleanup()
+
+    ingestion_states = [
+        PaperIngestionStateRecord.model_validate(ingestion_state)
+        for ingestion_state in ingestion_states
+        if ingestion_state
+    ]
+
+    if not ingestion_states:
+        return
+
+    return asyncio.run(_run_ingestions(ingestion_states))

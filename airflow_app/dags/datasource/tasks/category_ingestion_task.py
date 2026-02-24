@@ -10,9 +10,9 @@ from common.database.postgres.repositories import DatabaseRepository
 from common.database.postgres.session import cleanup, get_session_factory, init_database
 from common.datasources.factories import CategoryFetcherFactory
 from common.services.ingestion import CategoryIngestionService
-from common.utils.logger.logger_config import LoggerManager
+from common.utils.logger.logger_config import LoggerManager, LOG_MODULES
 
-logger = LoggerManager.get_logger(__name__)
+LoggerManager._log_module = LOG_MODULES.AIRFLOW
 
 
 @task
@@ -27,6 +27,7 @@ def ingest_categories_task(
     Returns:
         None
     """
+    logger = LoggerManager.get_logger(__name__)
 
     async def _run_ingestion(
         datasource_type: DataSource,
@@ -87,6 +88,7 @@ def domain_ingestion_state_task(datasource_type: DataSource):
     Returns:
         None
     """
+    logger = LoggerManager.get_logger(__name__)
 
     async def _run_task(datasource_type: DataSource):
         init_database()
