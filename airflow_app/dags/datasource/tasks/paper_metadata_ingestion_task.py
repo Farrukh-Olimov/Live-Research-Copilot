@@ -17,7 +17,13 @@ from common.utils.logger.logger_config import LOG_MODULES, LoggerManager
 LoggerManager._log_module = LOG_MODULES.AIRFLOW
 
 
-@task
+@task(
+    retries=2,
+    retry_delay=timedelta(seconds=5),
+    retry_exponential_backoff=True,
+    max_retry_delay=timedelta(minutes=2),
+    sla=timedelta(minutes=5),
+)
 def load_domain_ingestion_states() -> List[PaperIngestionStateRecord]:
     """Loads domain ingestion states for a all datasources.
 
@@ -66,7 +72,13 @@ def load_domain_ingestion_states() -> List[PaperIngestionStateRecord]:
     return asyncio.run(_run_ingestion())
 
 
-@task
+@task(
+    retries=2,
+    retry_delay=timedelta(seconds=5),
+    retry_exponential_backoff=True,
+    max_retry_delay=timedelta(minutes=2),
+    sla=timedelta(minutes=5),
+)
 def load_subject_to_ingest(
     ingestion_state: PaperIngestionStateRecord,
 ) -> List[SubjectIngestionRecord]:
@@ -124,7 +136,13 @@ def load_subject_to_ingest(
     return asyncio.run(_run_ingestion(ingestion_state))
 
 
-@task
+@task(
+    retries=2,
+    retry_delay=timedelta(seconds=5),
+    retry_exponential_backoff=True,
+    max_retry_delay=timedelta(minutes=2),
+    sla=timedelta(minutes=5),
+)
 def flatten(records) -> List:
     """Flatten a list of records."""
     logger = LoggerManager.get_logger(__name__)
@@ -144,7 +162,13 @@ def flatten(records) -> List:
     return new_records
 
 
-@task
+@task(
+    retries=5,
+    retry_delay=timedelta(minutes=5),
+    retry_exponential_backoff=True,
+    max_retry_delay=timedelta(minutes=10),
+    sla=timedelta(hours=2),
+)
 def ingest_papers_task(subject_record: SubjectIngestionRecord):
     """Runs the paper metadata ingestion task for the given datasource type.
 
@@ -235,7 +259,13 @@ def ingest_papers_task(subject_record: SubjectIngestionRecord):
     return asyncio.run(_run_ingestion(subject_record))
 
 
-@task
+@task(
+    retries=2,
+    retry_delay=timedelta(seconds=10),
+    retry_exponential_backoff=True,
+    max_retry_delay=timedelta(minutes=2),
+    sla=timedelta(minutes=5),
+)
 def update_domain_ingestion_states(ingestion_states: List[PaperIngestionStateRecord]):
     """Updates the domain ingestion states with the latest cursor dates.
 

@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from airflow.sdk import task
 from httpx import AsyncClient, Limits, Timeout
@@ -15,7 +15,13 @@ from common.utils.logger.logger_config import LOG_MODULES, LoggerManager
 LoggerManager._log_module = LOG_MODULES.AIRFLOW
 
 
-@task
+@task(
+    retries=2,
+    retry_delay=timedelta(seconds=10),
+    retry_exponential_backoff=True,
+    max_retry_delay=timedelta(minutes=2),
+    sla=timedelta(minutes=5),
+)
 def ingest_categories_task(
     datasource_type: DataSource,
 ):
@@ -78,7 +84,13 @@ def ingest_categories_task(
     asyncio.run(_run_ingestion(datasource_type))
 
 
-@task
+@task(
+    retries=2,
+    retry_delay=timedelta(seconds=10),
+    retry_exponential_backoff=True,
+    max_retry_delay=timedelta(minutes=2),
+    sla=timedelta(minutes=5),
+)
 def domain_ingestion_state_task(datasource_type: DataSource):
     """Sets the domain ingestion state for a given datasource.
 
