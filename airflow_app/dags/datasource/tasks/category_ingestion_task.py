@@ -10,7 +10,7 @@ from common.database.postgres.repositories import DatabaseRepository
 from common.database.postgres.session import cleanup, get_session_factory, init_database
 from common.datasources.factories import CategoryFetcherFactory
 from common.services.ingestion import CategoryIngestionService
-from common.utils.logger.logger_config import LoggerManager, LOG_MODULES
+from common.utils.logger.logger_config import LOG_MODULES, LoggerManager
 
 LoggerManager._log_module = LOG_MODULES.AIRFLOW
 

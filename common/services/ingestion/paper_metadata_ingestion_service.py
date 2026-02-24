@@ -4,6 +4,7 @@ from typing import ClassVar, List, Optional
 from uuid import UUID
 
 from httpx import AsyncClient
+from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from common.constants import DataSource
@@ -13,7 +14,6 @@ from common.database.postgres.repositories import DatabaseRepository
 from common.datasources.factories import PaperMetadataIngestionFactory
 from common.datasources.schema import PaperMetadataRecord
 from common.utils.logger.logger_config import LoggerManager
-from sqlalchemy.exc import DBAPIError
 
 logger = LoggerManager.get_logger(__name__)
 
@@ -116,14 +116,14 @@ class PaperMetadataIngestionService:
 
     async def _ingest_one(
         self,
-        paper: PaperMetadataRecord,
+        paper_metadata: PaperMetadataRecord,
         datasource_uuid: UUID,
         datasource_type: DataSource,
     ) -> Optional[Paper]:
         """Orchestrates the ingestion of a paper.
 
         Args:
-            paper (PaperMetadataRecord): The paper to ingest.
+            paper_metadata (PaperMetadataRecord): The paper metadata to ingest.
             datasource_uuid (UUID): The UUID of the datasource.
             datasource_type (DataSource): The type of the datasource.
             session (AsyncSession): The database session.
@@ -134,14 +134,17 @@ class PaperMetadataIngestionService:
         async with self._db_session_factory() as session:
             async with session.begin():
                 domain = await self._get_domain(
-                    paper.domain_code, datasource_uuid, datasource_type, session
+                    paper_metadata.domain_code,
+                    datasource_uuid,
+                    datasource_type,
+                    session,
                 )
                 if domain is None:
                     return None
 
                 # Get subjects
                 subject = await self._get_subject(
-                    paper.primary_subject_code,
+                    paper_metadata.primary_subject_code,
                     datasource_uuid,
                     datasource_type,
                     session,
@@ -150,17 +153,17 @@ class PaperMetadataIngestionService:
                     return None
 
                 secondary_subjects = await self._db.subject.get_by_codes(
-                    paper.secondary_subject_codes, session
+                    paper_metadata.secondary_subject_codes, session
                 )
 
                 authors = await self._get_or_create_authors(
-                    paper.authors, datasource_uuid, datasource_type
+                    paper_metadata.authors, datasource_uuid, datasource_type
                 )
                 if not authors:
                     return None
 
                 paper = await self._get_or_create_paper(
-                    paper,
+                    paper_metadata,
                     authors,
                     domain,
                     subject,
@@ -176,7 +179,7 @@ class PaperMetadataIngestionService:
         subject_uuid: UUID,
         from_date: datetime,
         until_date: datetime,
-    ) -> bool:
+    ) -> List[PaperMetadataRecord]:
         """Runs the paper metadata ingestion given subject and date range.
 
         Args:
@@ -186,9 +189,10 @@ class PaperMetadataIngestionService:
             until_date (datetime): The until date to ingest.
 
         Returns:
-            bool: True if the ingestion was successful, False otherwise.
+            List[PaperMetadataRecord]: A list of paper metadata records.
+
         """
-        is_updated = False
+        all_papers: List[PaperMetadataRecord] = []
         async with self._db_session_factory() as session:
             async with session.begin():
                 subject_code = await self._get_subject_code(subject_uuid, session)
@@ -202,14 +206,15 @@ class PaperMetadataIngestionService:
         async for paper in ingestion.run(subject_code, from_date, until_date):
             jobs.append(self._ingest_one(paper, datasource_uuid, datasource_type))
             if len(jobs) >= self.INGESTION_BATCH_SIZE:
-                papers = await asyncio.gather(*jobs)
-                is_updated = is_updated or any(p is not None for p in papers)
+                await asyncio.gather(*jobs)
                 jobs.clear()
+            if paper:
+                all_papers.append(paper)
 
         if jobs:
-            papers = await asyncio.gather(*jobs)
-            is_updated = is_updated or any(p is not None for p in papers)
-        return is_updated
+            await asyncio.gather(*jobs)
+
+        return all_papers
 
     async def _get_datasource_type(self, datasource_uuid: UUID, session: AsyncSession):
         """Returns the type of the datasource with the given UUID.
@@ -344,8 +349,15 @@ class PaperMetadataIngestionService:
                         except DBAPIError as e:
                             if "deadlock detected" in str(e) and retry < max_retry:
                                 logger.warning(
-                                    f"Deadlock detected, retrying (attempt {retry + 1}/{max_retry})",
+                                    "Deadlock detected, retrying",
                                     exc_info=True,
+                                    extra={
+                                        "paper_author": paper_author,
+                                        "datasource": datasource_type,
+                                        "datasource_uuid": datasource_uuid,
+                                        "retry": retry,
+                                        "max_retry": max_retry,
+                                    },
                                 )
                                 await asyncio.sleep(1)
                                 continue

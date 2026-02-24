@@ -1,14 +1,14 @@
 from airflow.sdk import dag
 from dags.datasource.tasks.paper_metadata_ingestion_task import (
     flatten,
+    ingest_papers_task,
     load_domain_ingestion_states,
     load_subject_to_ingest,
-    ingest_papers_task,
     update_domain_ingestion_states,
 )
 from pendulum import datetime
 
-from common.utils.logger.logger_config import LoggerManager, LOG_MODULES
+from common.utils.logger.logger_config import LOG_MODULES, LoggerManager
 
 LoggerManager._log_module = LOG_MODULES.AIRFLOW
 

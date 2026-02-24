@@ -10,8 +10,9 @@ from httpx import AsyncClient, Limits, Timeout
 from common.database.postgres.repositories import DatabaseRepository
 from common.database.postgres.session import cleanup, get_session_factory, init_database
 from common.datasources.factories import PaperMetadataIngestionFactory
+from common.datasources.schema import PaperMetadataRecord
 from common.services.ingestion import PaperMetadataIngestionService
-from common.utils.logger.logger_config import LoggerManager, LOG_MODULES
+from common.utils.logger.logger_config import LOG_MODULES, LoggerManager
 
 LoggerManager._log_module = LOG_MODULES.AIRFLOW
 
@@ -163,7 +164,8 @@ def ingest_papers_task(subject_record: SubjectIngestionRecord):
         _factory = PaperMetadataIngestionFactory()
         _db = DatabaseRepository()
 
-        is_inserted = False
+        paper_ingestion_state: PaperIngestionStateRecord = False
+        paper_metada_records: List[PaperMetadataRecord] = []
         try:
             async with AsyncClient(
                 timeout=Timeout(30), limits=Limits(max_connections=10)
@@ -172,12 +174,40 @@ def ingest_papers_task(subject_record: SubjectIngestionRecord):
                     _factory, _db, _async_session_factory, http_client
                 )
 
-                is_inserted = await metadata_ingestion_service.run(
+                paper_metada_records = await metadata_ingestion_service.run(
                     datasource_uuid=subject_record.datasource_uuid,
                     subject_uuid=subject_record.subject_uuid,
                     from_date=subject_record.from_date,
                     until_date=subject_record.until_date,
                 )
+
+                domain_code = None
+                datasource_type = None
+                publish_date = None
+                for metadata in paper_metada_records:
+                    value = metadata.publish_date
+                    if domain_code is None:
+                        domain_code = metadata.domain_code
+                        datasource_type = metadata.source
+                        publish_date = metadata.publish_date
+                    publish_date = max(publish_date, value)
+
+                if domain_code is not None:
+                    async with _async_session_factory() as session:
+                        datasource_uuid = await _db.datasource.get_uuid_by_name(
+                            datasource_type, session
+                        )
+                        domain = await _db.domain.get_by_code(
+                            domain_code, datasource_uuid, session
+                        )
+
+                        paper_ingestion_state = PaperIngestionStateRecord(
+                            datasource_uuid=datasource_uuid,
+                            domain_uuid=domain.id,
+                            cursor_date=publish_date,
+                            is_active=True,
+                            is_updated=True,
+                        )
         except Exception as e:
             logger.error(
                 "Error running paper ingestion task",
@@ -188,20 +218,16 @@ def ingest_papers_task(subject_record: SubjectIngestionRecord):
         finally:
             await cleanup()
 
-        ingestion_state = None
-        if is_inserted:
+        if paper_ingestion_state:
             logger.info(
                 "Paper ingestion task completed",
-                extra={"subject_record": subject_record},
+                extra={
+                    "subject_record": subject_record,
+                    "num_papers_ingested": len(paper_metada_records),
+                },
             )
-            ingestion_state = PaperIngestionStateRecord(
-                datasource_uuid=subject_record.datasource_uuid,
-                domain_uuid=subject_record.domain_uuid,
-                cursor_date=subject_record.until_date,
-                is_active=True,
-                is_updated=True,
-            ).model_dump(mode="json")
-        return ingestion_state
+            paper_ingestion_state = paper_ingestion_state.model_dump(mode="json")
+        return paper_ingestion_state
 
     if subject_record is None:
         return None
@@ -211,6 +237,15 @@ def ingest_papers_task(subject_record: SubjectIngestionRecord):
 
 @task
 def update_domain_ingestion_states(ingestion_states: List[PaperIngestionStateRecord]):
+    """Updates the domain ingestion states with the latest cursor dates.
+
+    Args:
+        ingestion_states (List[PaperIngestionStateRecord]): A list of ingestion
+             states to update.
+
+    Returns:
+        None
+    """
     logger = LoggerManager.get_logger(__name__)
     logger.info("Updating domain ingestion states")
 

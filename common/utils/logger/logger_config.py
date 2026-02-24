@@ -1,3 +1,4 @@
+from enum import Enum
 import logging
 import sys
 from threading import Lock
@@ -13,9 +14,7 @@ from .rotation import (
     SizeRotationConfig,
     TimeRotationConfig,
 )
-from typing import Literal
 from .rotation.base import BaseRotationConfig
-from enum import Enum
 
 
 class LOG_MODULES(Enum):

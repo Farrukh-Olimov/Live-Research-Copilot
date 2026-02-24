@@ -1,13 +1,13 @@
 from typing import List, Optional
-import asyncio
+
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from common.database.postgres.models import Author
+from common.utils.logger.logger_config import LoggerManager
 
 from .base_repository import BaseRepository
-from common.utils.logger.logger_config import LoggerManager
 
 logger = LoggerManager.get_logger(__name__)
 
@@ -24,7 +24,6 @@ class AuthorRespotitory(BaseRepository[Author]):
 
     async def create(self, model: Author, session: AsyncSession) -> Author:
         """Creates a model."""
-
         stmt = (
             insert(Author)
             .values(name=model.name)

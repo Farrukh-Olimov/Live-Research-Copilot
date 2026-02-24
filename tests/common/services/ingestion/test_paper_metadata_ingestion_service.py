@@ -133,9 +133,7 @@ class TestPaperMetadataIngestionService:
 
         # test if aauthor in db already
         async with self._async_session_factory() as session:
-            author = await self._database.author.create(
-                Author(name=paper_authors[0]), session
-            )
+            await self._database.author.create(Author(name=paper_authors[0]), session)
             authors = await self.ingest_service._get_or_create_authors(
                 paper_authors, datasource.id, DataSource.ARXIV
             )

@@ -6,7 +6,7 @@ from dags.datasource.tasks.category_ingestion_task import (
 from pendulum import datetime
 
 from common.constants import DataSource
-from common.utils.logger.logger_config import LoggerManager, LOG_MODULES
+from common.utils.logger.logger_config import LOG_MODULES, LoggerManager
 
 LoggerManager._log_module = LOG_MODULES.AIRFLOW
 logger = LoggerManager.get_logger(__name__)
