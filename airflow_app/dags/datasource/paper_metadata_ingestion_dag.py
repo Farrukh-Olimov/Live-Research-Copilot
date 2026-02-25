@@ -20,6 +20,7 @@ logger = LoggerManager.get_logger(__name__)
     catchup=False,
     schedule="@daily",
     tags=["paper_metadata_ingestion"],
+    max_active_tasks=16,
 )
 def paper_metadata_ingestion_dag():
     """Run paper metadata ingestion task per datasources."""
