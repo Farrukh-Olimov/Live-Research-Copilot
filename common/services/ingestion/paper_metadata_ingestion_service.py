@@ -179,7 +179,7 @@ class PaperMetadataIngestionService:
         subject_uuid: UUID,
         from_date: datetime,
         until_date: datetime,
-    ) -> List[PaperMetadataRecord]:
+    ) -> int:
         """Runs the paper metadata ingestion given subject and date range.
 
         Args:
@@ -189,10 +189,9 @@ class PaperMetadataIngestionService:
             until_date (datetime): The until date to ingest.
 
         Returns:
-            List[PaperMetadataRecord]: A list of paper metadata records.
-
+            int: The number of papers ingested.
         """
-        all_papers: List[PaperMetadataRecord] = []
+        ingested_papers_count = 0
         async with self._db_session_factory() as session:
             async with session.begin():
                 subject_code = await self._get_subject_code(subject_uuid, session)
@@ -204,17 +203,19 @@ class PaperMetadataIngestionService:
 
         jobs = []
         async for paper in ingestion.run(subject_code, from_date, until_date):
+            if paper is None:
+                continue
             jobs.append(self._ingest_one(paper, datasource_uuid, datasource_type))
             if len(jobs) >= self.INGESTION_BATCH_SIZE:
                 await asyncio.gather(*jobs)
+                ingested_papers_count += len(jobs)
                 jobs.clear()
-            if paper:
-                all_papers.append(paper)
 
         if jobs:
             await asyncio.gather(*jobs)
+            ingested_papers_count += len(jobs)
 
-        return all_papers
+        return ingested_papers_count
 
     async def _get_datasource_type(self, datasource_uuid: UUID, session: AsyncSession):
         """Returns the type of the datasource with the given UUID.

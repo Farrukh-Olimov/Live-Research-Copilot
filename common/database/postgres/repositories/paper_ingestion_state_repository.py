@@ -1,10 +1,10 @@
 from typing import List, Optional
 
-from sqlalchemy import UUID, select, update
+from sqlalchemy import UUID, func, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from common.database.postgres.models import PaperIngestionState
+from common.database.postgres.models import Paper, PaperIngestionState
 
 from .base_repository import BaseRepository
 
@@ -58,20 +58,29 @@ class PaperIngestionStateRepository(BaseRepository[PaperIngestionState]):
         rows = await session.execute(query)
         return rows.scalars().all()
 
-    async def update_cursor_date(
+    async def update_cursor_date_from_papers(
         self,
-        domain_id: UUID,
-        datasource_id: UUID,
-        cursor_date: str,
         session: AsyncSession,
     ):
         """Update the cursor date for a specific domain."""
+        sub_query = (
+            select(
+                Paper.domain_id,
+                Paper.datasource_id,
+                func.max(Paper.publish_date).label("cursor_date"),
+            )
+            .group_by(Paper.domain_id, Paper.datasource_id)
+            .subquery()
+        )
+
         query = (
             update(PaperIngestionState)
+            .values(cursor_date=sub_query.c.cursor_date)
             .where(
-                PaperIngestionState.domain_id == domain_id,
-                PaperIngestionState.datasource_id == datasource_id,
+                PaperIngestionState.domain_id == sub_query.c.domain_id,
+                PaperIngestionState.datasource_id == sub_query.c.datasource_id,
+                PaperIngestionState.cursor_date < sub_query.c.cursor_date,
             )
-            .values(cursor_date=cursor_date)
         )
+
         await session.execute(query)

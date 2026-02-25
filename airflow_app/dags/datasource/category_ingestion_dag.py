@@ -17,6 +17,7 @@ logger = LoggerManager.get_logger(__name__)
     catchup=False,
     schedule="@monthly",
     tags=["category_ingestion"],
+    max_active_runs=1,
 )
 def category_ingestion_dag():
     """A dag that runs the category ingestion task for all datasources.

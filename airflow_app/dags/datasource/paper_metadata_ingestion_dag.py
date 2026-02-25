@@ -21,6 +21,7 @@ logger = LoggerManager.get_logger(__name__)
     schedule="@daily",
     tags=["paper_metadata_ingestion"],
     max_active_tasks=16,
+    max_active_runs=1,
 )
 def paper_metadata_ingestion_dag():
     """Run paper metadata ingestion task per datasources."""
@@ -29,11 +30,10 @@ def paper_metadata_ingestion_dag():
     ingestion_states = load_domain_ingestion_states()
     subject_candidates = load_subject_to_ingest.expand(ingestion_state=ingestion_states)
     flattened_subject_candidates = flatten(subject_candidates)
-    ingested_states = ingest_papers_task.expand(
+    ingested_tasks = ingest_papers_task.expand(
         subject_record=flattened_subject_candidates
     )
-    flattened_ingested_states = flatten(ingested_states)
-    update_domain_ingestion_states(ingestion_states=flattened_ingested_states)
+    ingested_tasks.set_downstream(update_domain_ingestion_states())
 
 
 dag_variable = paper_metadata_ingestion_dag()
