@@ -11,14 +11,12 @@ class PaperMetadataIngestionFactory:
 
     @overload
     @staticmethod
-    def create(
+    def get(
         datasource_type: DataSource.ARXIV, client: AsyncClient
     ) -> ArxivPaperMetadataIngestion: ...
 
     @staticmethod
-    def create(
-        datasource_type: DataSource, client: AsyncClient
-    ) -> PaperMetadataIngestion:
+    def get(datasource_type: DataSource, client: AsyncClient) -> PaperMetadataIngestion:
         """Creates a paper metadata ingestion object based on the ingestion type.
 
         Args:

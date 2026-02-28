@@ -6,8 +6,13 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from common.database.postgres.models.base import BaseModel
-from common.utils.logger.logger_config import LoggerManager
+from common.utils.logger import LoggerManager
+from common.utils.logger.constants import LogLevel
 
+
+LoggerManager.configure(
+    level=LogLevel.DEBUG,
+)
 logger = LoggerManager.get_logger(__name__)
 
 load_dotenv(".env")

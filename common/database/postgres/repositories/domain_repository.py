@@ -18,6 +18,7 @@ class DomainRepository(BaseRepository[Domain]):
 
     async def create(self, model: Domain, session: AsyncSession) -> Domain:
         """Creates a model."""
+        # TODO: refactor
         try:
             async with session.begin_nested():
                 session.add(model)

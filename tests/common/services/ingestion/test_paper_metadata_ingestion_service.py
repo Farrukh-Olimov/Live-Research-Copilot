@@ -210,7 +210,7 @@ class TestPaperMetadataIngestionService:
             )
             await session.commit()
 
-        category_fetcher = CategoryFetcherFactory.create(
+        category_fetcher = CategoryFetcherFactory.get(
             DataSource.ARXIV, datasource.id, self._http_client
         )
         category_ingestion = CategoryIngestionService(self._async_session_factory)

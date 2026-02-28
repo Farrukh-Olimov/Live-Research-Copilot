@@ -23,6 +23,7 @@ class PaperRepository(BaseRepository[Paper]):
 
     async def create(self, model: Paper, session: AsyncSession) -> Paper:
         """Creates a model."""
+        # TODO: refactor
         try:
             async with session.begin_nested():
                 session.add(model)

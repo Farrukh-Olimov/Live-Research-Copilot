@@ -23,6 +23,7 @@ class DatasourceRepository(BaseRepository[Datasource]):
 
     async def create(self, model: Datasource, session: AsyncSession) -> Datasource:
         """Creates a model."""
+        # TODO: refactor
         try:
             async with session.begin_nested():
                 session.add(model)

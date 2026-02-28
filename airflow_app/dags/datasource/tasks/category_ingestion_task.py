@@ -10,7 +10,7 @@ from common.database.postgres.repositories import DatabaseRepository
 from common.database.postgres.session import cleanup, get_session_factory, init_database
 from common.datasources.factories import CategoryFetcherFactory
 from common.services.ingestion import CategoryIngestionService
-from common.utils.logger.logger_config import LOG_MODULES, LoggerManager
+from common.utils.logger import LOG_MODULES, LoggerManager
 
 LoggerManager._log_module = LOG_MODULES.AIRFLOW
 
@@ -48,6 +48,12 @@ def ingest_categories_task(
             None
         """
         init_database()
+        logger.info(
+            "Start running category ingestion task.",
+            extra={"datasource": datasource_type},
+        )
+
+        new_categories = 0
 
         try:
             db = DatabaseRepository()
@@ -61,22 +67,35 @@ def ingest_categories_task(
                         datasource = Datasource(name=datasource_type)
                         datasource = await db.datasource.create(datasource, session)
                         datasource_uuid = datasource.id
+                        logger.debug(
+                            "Created datasource",
+                            extra={
+                                "datasource": datasource_type,
+                                "datasource_uuid": datasource_uuid,
+                            },
+                        )
 
             async with AsyncClient(
                 timeout=Timeout(30), limits=Limits(max_connections=10)
             ) as http_client:
                 ingestion_service = CategoryIngestionService(_async_session_factory)
-                category_fetcher = CategoryFetcherFactory.create(
+                category_fetcher = CategoryFetcherFactory.get(
                     datasource_type, datasource_uuid, http_client
                 )
                 async for subject in category_fetcher.fetch_subjects():
-                    await ingestion_service.ingest_subject(subject)
+                    new_categories += await ingestion_service.ingest_subject(subject)
+
+            logger.info(
+                "Category ingestion task completed.",
+                extra={"datasource": datasource_type, "new_categories": new_categories},
+            )
+            # TODO: add metrics
 
         except Exception as e:
             logger.error(
                 "Error running category ingestion task",
                 exc_info=e,
-                extra={"datasource": datasource_type},
+                extra={"datasource": datasource_type, "new_categories": new_categories},
             )
             raise e
         finally:
@@ -107,7 +126,8 @@ def domain_ingestion_state_task(datasource_type: DataSource):
     async def _run_task(datasource_type: DataSource):
         init_database()
         logger.info(
-            "Setting domain ingestion state.", extra={"datasource": datasource_type}
+            "Start setting domain ingestion state.",
+            extra={"datasource": datasource_type},
         )
         try:
             db = DatabaseRepository()

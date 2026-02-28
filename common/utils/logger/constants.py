@@ -9,3 +9,8 @@ class LogLevel(str, Enum):
     WARNING = "WARNING"
     ERROR = "ERROR"
     CRITICAL = "CRITICAL"
+
+
+class LOG_MODULES(Enum):
+    APP = "app"
+    AIRFLOW = "airflow"

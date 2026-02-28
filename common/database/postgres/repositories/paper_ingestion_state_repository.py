@@ -18,6 +18,7 @@ class PaperIngestionStateRepository(BaseRepository[PaperIngestionState]):
         self, model: PaperIngestionState, session: AsyncSession
     ) -> PaperIngestionState:
         """Creates a model."""
+        # TODO: refactor
         try:
             async with session.begin_nested():
                 session.add(model)

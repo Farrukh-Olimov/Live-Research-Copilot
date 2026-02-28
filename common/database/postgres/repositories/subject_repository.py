@@ -15,6 +15,7 @@ class SubjectRepository(BaseRepository[Subject]):
 
     async def create(self, model: Subject, session: AsyncSession) -> Subject:
         """Creates a model."""
+        # TODO: refactor
         try:
             async with session.begin_nested():
                 session.add(model)

@@ -9,7 +9,7 @@ from common.datasources.arxiv.paper_metadata_parser import ArxivPaperMetadataPar
 from common.datasources.arxiv.paper_normalizer import ArxivPaperMetadataNormalize
 from common.datasources.arxiv.schema import ArxivPaperMetadataRecord
 from common.datasources.base import PaperMetadataIngestion, PaperMetadataRecord
-from common.utils.logger.logger_config import LoggerManager
+from common.utils.logger import LoggerManager
 
 logger = LoggerManager.get_logger(__name__)
 
@@ -42,7 +42,7 @@ class ArxivPaperMetadataIngestion(PaperMetadataIngestion[ArxivPaperMetadataRecor
             AsyncIterator[PaperMetadataRecord]: An asynchronous iterator
                 of paper metadata records.
         """
-        logger.info(
+        logger.debug(
             "Start ingesting paper metadata",
             extra={
                 "subject_code": subject_code,
@@ -57,7 +57,7 @@ class ArxivPaperMetadataIngestion(PaperMetadataIngestion[ArxivPaperMetadataRecor
             normalized_paper_metadata = self._normalizer.normalize(paper)
             yield normalized_paper_metadata
 
-        logger.info(
+        logger.debug(
             "Finished ingesting paper metadata",
             extra={
                 "subject_code": subject_code,

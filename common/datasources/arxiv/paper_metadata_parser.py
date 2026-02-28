@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 from common.datasources.arxiv.const import DATASOURCE_NAME, NAMESPACE
 from common.datasources.arxiv.schema import ArxivPaperMetadataRecord
 from common.datasources.base import PaperMetadataParser
-from common.utils.logger.logger_config import LoggerManager
+from common.utils.logger import LoggerManager
 
 logger = LoggerManager.get_logger(__name__)
 

@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from common.database.postgres.models import Domain, Subject
 from common.database.postgres.repositories import DatabaseRepository
 from common.datasources.schema import SubjectSchema
-from common.utils.logger.logger_config import LoggerManager
+from common.utils.logger import LoggerManager
 
 logger = LoggerManager.get_logger(__name__)
 
@@ -60,9 +60,10 @@ class CategoryIngestionService:
                         )
                         await self._db.subject.create(new_subject, session)
                     except IntegrityError:
-                        logger.warning(
+                        logger.info(
                             "Subject already exists", extra={"subject": subject}
                         )
+                return not existing_subject
 
     async def ingest_subjects_batch(self, subjects: List[SubjectSchema]):
         """Ingests a batch of subjects and their domains into the database.
@@ -74,7 +75,7 @@ class CategoryIngestionService:
             None
         """
         if not subjects:
-            logger.info("No subjects to ingest")
+            logger.debug("No subjects to ingest")
             return
         async with self._db_session_factory() as session:
             async with session.begin():

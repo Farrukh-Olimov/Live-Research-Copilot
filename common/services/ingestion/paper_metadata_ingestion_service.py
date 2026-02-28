@@ -13,7 +13,7 @@ from common.database.postgres.models.relationships import PaperSubject
 from common.database.postgres.repositories import DatabaseRepository
 from common.datasources.factories import PaperMetadataIngestionFactory
 from common.datasources.schema import PaperMetadataRecord
-from common.utils.logger.logger_config import LoggerManager
+from common.utils.logger import LoggerManager
 
 logger = LoggerManager.get_logger(__name__)
 
@@ -71,7 +71,7 @@ class PaperMetadataIngestionService:
         """
         paper = await self._db.paper.get_by_paper_id(paper_metadata.paper_id, session)
         if paper:
-            logger.info(
+            logger.debug(
                 "Paper already exists",
                 extra={"paper": paper.title, "paper_id": paper.id},
             )
@@ -89,7 +89,7 @@ class PaperMetadataIngestionService:
 
         paper = await self._db.paper.create(paper, session)
         if paper is None:
-            logger.error(
+            logger.warning(
                 "Failed to create paper",
                 extra={
                     "paper": paper_metadata.title,
@@ -199,7 +199,7 @@ class PaperMetadataIngestionService:
                     datasource_uuid, session
                 )
 
-        ingestion = self._factory.create(datasource_type, self._http_client)
+        ingestion = self._factory.get(datasource_type, self._http_client)
 
         jobs = []
         async for paper in ingestion.run(subject_code, from_date, until_date):
@@ -277,7 +277,7 @@ class PaperMetadataIngestionService:
             domain_code, datasource_uuid, session
         )
         if domain is None:
-            logger.error(
+            logger.warning(
                 "Domain not found",
                 extra={
                     "domain_code": domain_code,
@@ -307,7 +307,7 @@ class PaperMetadataIngestionService:
         """
         subject = await self._db.subject.get_by_code(subject_code, session)
         if subject is None:
-            logger.error(
+            logger.warning(
                 "Subject not found",
                 extra={
                     "subject_code": subject_code,
@@ -365,7 +365,7 @@ class PaperMetadataIngestionService:
                             break
 
         if len(database_authors) != len(paper_authors):
-            logger.error(
+            logger.warning(
                 "Error getting or creating authors",
                 extra={
                     "authors": paper_authors,

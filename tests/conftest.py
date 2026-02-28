@@ -3,7 +3,7 @@ import pytest
 import pytest_asyncio
 
 from common.utils.logger.constants import LogLevel
-from common.utils.logger.logger_config import LoggerManager
+from common.utils.logger import LoggerManager
 from common.utils.logger.rotation import RotationType
 from tests.mocks.arxiv_routes import lazy_arxiv_router
 

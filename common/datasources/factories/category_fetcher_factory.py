@@ -10,14 +10,14 @@ from common.datasources.arxiv import ArxivCategoryFetcher
 class CategoryFetcherFactory:
     @overload
     @staticmethod
-    def create(
+    def get(
         datasource_type: DataSource.ARXIV,
         datasource_uuid: UUID,
         http_client: AsyncClient,
     ) -> ArxivCategoryFetcher: ...
 
     @staticmethod
-    def create(
+    def get(
         datasource_type: DataSource, datasource_uuid: UUID, http_client: AsyncClient
     ):
         """Creates a category fetcher object based on the ingestion type.

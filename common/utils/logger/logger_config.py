@@ -6,7 +6,7 @@ from typing import ClassVar
 
 from common.constants import LOG_DIR
 
-from .constants import LogLevel
+from .constants import LogLevel, LOG_MODULES
 from .filters import RateLimitFilter, SensitiveDataFilter
 from .formatter import ConsoleFormatter, StructuredFormatter
 from .rotation import (
@@ -15,11 +15,6 @@ from .rotation import (
     TimeRotationConfig,
 )
 from .rotation.base import BaseRotationConfig
-
-
-class LOG_MODULES(Enum):
-    APP = "app"
-    AIRFLOW = "airflow"
 
 
 class LoggerManager:

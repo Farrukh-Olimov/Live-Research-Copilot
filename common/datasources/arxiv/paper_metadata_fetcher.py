@@ -4,7 +4,7 @@ from typing import AsyncIterator, ClassVar, Optional
 from common.datasources.arxiv.const import DATASOURCE_NAME
 from common.datasources.arxiv.schema import ArxivPaperMetadataRecord
 from common.datasources.base import PaperMetadataFetcher
-from common.utils.logger.logger_config import LoggerManager
+from common.utils.logger import LoggerManager
 
 logger = LoggerManager.get_logger(__name__)
 
@@ -77,7 +77,7 @@ class ArxivPaperMetadataFetcher(PaperMetadataFetcher[ArxivPaperMetadataRecord]):
             AsyncIterator[ArxivPaperSchema]: An asynchronous iterator
                 of paper metadata objects.
         """
-        logger.info(
+        logger.debug(
             "Start fetching paper metadata", extra={"subject_code": subject_code}
         )
 
@@ -101,6 +101,6 @@ class ArxivPaperMetadataFetcher(PaperMetadataFetcher[ArxivPaperMetadataRecord]):
             if not resumption_token:
                 break
 
-        logger.info(
+        logger.debug(
             "Finished fetching paper metadata", extra={"subject_code": subject_code}
         )

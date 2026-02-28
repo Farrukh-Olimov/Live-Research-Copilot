@@ -5,11 +5,9 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from common.database.postgres.models import Author
-from common.utils.logger.logger_config import LoggerManager
 
 from .base_repository import BaseRepository
 
-logger = LoggerManager.get_logger(__name__)
 
 
 class AuthorRespotitory(BaseRepository[Author]):

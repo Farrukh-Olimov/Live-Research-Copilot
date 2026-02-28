@@ -11,7 +11,7 @@ from common.database.postgres.repositories import DatabaseRepository
 from common.database.postgres.session import cleanup, get_session_factory, init_database
 from common.datasources.factories import PaperMetadataIngestionFactory
 from common.services.ingestion import PaperMetadataIngestionService
-from common.utils.logger.logger_config import LOG_MODULES, LoggerManager
+from common.utils.logger import LOG_MODULES, LoggerManager
 
 LoggerManager._log_module = LOG_MODULES.AIRFLOW
 
@@ -35,7 +35,7 @@ def load_domain_ingestion_states() -> List[PaperIngestionStateRecord]:
             given datasource type.
     """
     logger = LoggerManager.get_logger(__name__)
-    logger.info("Loading domain ingestion states")
+    logger.info("Start loading domain ingestion states")
 
     async def _run_ingestion():
         init_database()
@@ -94,7 +94,9 @@ def load_subject_to_ingest(
             given ingestion state.
     """
     logger = LoggerManager.get_logger(__name__)
-    logger.info("Loading subject to ingest", extra={"ingestion_state": ingestion_state})
+    logger.info(
+        "Start loading subject to ingest", extra={"ingestion_state": ingestion_state}
+    )
 
     async def _run_ingestion(ingestion_state: PaperIngestionStateRecord):
 
@@ -148,7 +150,7 @@ def load_subject_to_ingest(
 def flatten(records) -> List:
     """Flatten a list of records."""
     logger = LoggerManager.get_logger(__name__)
-
+    logger.info("Start flattening records", extra={"count": len(records)})
     new_records = []
     queue = []
     for record in records:
@@ -183,7 +185,7 @@ def ingest_papers_task(subject_record: SubjectIngestionRecord):
         None
     """
     logger = LoggerManager.get_logger(__name__)
-    logger.info("Running paper ingestion task")
+    logger.info("Start paper ingestion task", extra={"subject_record": subject_record})
 
     async def _run_ingestion(subject_record: SubjectIngestionRecord):
         init_database()
@@ -224,6 +226,7 @@ def ingest_papers_task(subject_record: SubjectIngestionRecord):
                 "num_papers_ingested": ingested_papers_count,
             },
         )
+        # TODO: add metrics
 
     if subject_record is None:
         return None
@@ -246,7 +249,7 @@ def update_domain_ingestion_states():
         None
     """
     logger = LoggerManager.get_logger(__name__)
-    logger.info("Updating domain ingestion states")
+    logger.info("Start updating domain ingestion states")
 
     async def _run_ingestions():
         init_database()
