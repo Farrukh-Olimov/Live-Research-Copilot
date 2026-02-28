@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 from common.datasources.arxiv.const import DATASOURCE_NAME, NAMESPACE
 from common.datasources.base import CategoryFetcher
 from common.datasources.schema import DomainSchema, SubjectSchema
-from common.utils.logger import LoggerManager, LOG_MODULES
+from common.utils.logger import LOG_MODULES, LoggerManager
 
 LoggerManager._log_module = LOG_MODULES.APP
 logger = LoggerManager.get_logger(__name__)

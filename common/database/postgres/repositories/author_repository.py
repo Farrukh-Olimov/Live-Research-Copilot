@@ -9,7 +9,6 @@ from common.database.postgres.models import Author
 from .base_repository import BaseRepository
 
 
-
 class AuthorRespotitory(BaseRepository[Author]):
     """Repository for Author."""
 

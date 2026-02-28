@@ -2,18 +2,18 @@ import httpx
 import pytest
 import pytest_asyncio
 
-from common.utils.logger.constants import LogLevel
-from common.utils.logger import LoggerManager
+from common.utils.logger import LoggerManager, LogLevel
 from common.utils.logger.rotation import RotationType
-from tests.mocks.arxiv_routes import lazy_arxiv_router
 
 
 @pytest.fixture(autouse=True, scope="session")
 def setup_logger():
     """Configure the logger before running any tests."""
     LoggerManager.configure(
-        level=LogLevel.DEBUG,
+        level=LogLevel.CRITICAL,
         rotation_type=RotationType.TIME,
+        log_to_console=True,
+        log_to_file=False,
         console_colors=True,
         structured_format=False,
         sanitize_sensitive=True,
@@ -30,6 +30,8 @@ async def httpx_async_client():
     MockTransport that handles requests according to
     the lazy_arxiv_router handler.
     """
+    from tests.mocks.arxiv_routes import lazy_arxiv_router
+
     handler = lazy_arxiv_router()
     transport = httpx.MockTransport(handler=handler)
     async with httpx.AsyncClient(transport=transport) as client:
