@@ -1,11 +1,11 @@
 from airflow.sdk import TriggerRule, chain, dag
-from pendulum import datetime
-
 from dags.datasource.tasks.subjects_ingestion_task import (
     domain_ingestion_state_task,
     ingest_subjects_task,
     update_statistics,
 )
+from pendulum import datetime
+
 from common.constants import DataSource
 from common.utils.logger import LOG_MODULES, LoggerManager
 

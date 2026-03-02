@@ -1,4 +1,4 @@
-from airflow.sdk import dag, TriggerRule
+from airflow.sdk import TriggerRule, dag
 from dags.datasource.tasks.paper_metadata_ingestion_task import (
     flatten,
     ingest_papers_task,

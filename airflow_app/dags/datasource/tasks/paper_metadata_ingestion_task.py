@@ -330,7 +330,7 @@ def update_statistics():
             )
             logger.info(f"Other subjects has {other_paper_counts} papers")
             statsd.gauge(
-                f"papers.ingested.by_subject.total.other",
+                "papers.ingested.by_subject.total.other",
                 other_paper_counts,
             )
 
