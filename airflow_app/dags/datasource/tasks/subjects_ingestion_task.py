@@ -1,15 +1,16 @@
 import asyncio
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 from airflow.sdk import task
+from airflow.stats import Stats
 from httpx import AsyncClient, Limits, Timeout
 
 from common.constants import DataSource
 from common.database.postgres.models import Datasource, PaperIngestionState
 from common.database.postgres.repositories import DatabaseRepository
 from common.database.postgres.session import cleanup, get_session_factory, init_database
-from common.datasources.factories import CategoryFetcherFactory
-from common.services.ingestion import CategoryIngestionService
+from common.datasources.factories import SubjectsFetcherFactory
+from common.services.ingestion import SubjectsIngestionService
 from common.utils.logger import LOG_MODULES, LoggerManager
 
 LoggerManager._log_module = LOG_MODULES.AIRFLOW
@@ -23,10 +24,10 @@ LoggerManager._log_module = LOG_MODULES.AIRFLOW
     sla=timedelta(minutes=5),
     execution_timeout=timedelta(minutes=5),
 )
-def ingest_categories_task(
+def ingest_subjects_task(
     datasource_type: DataSource,
 ):
-    """Run category ingestion for given datasource.
+    """Run subjects ingestion for given datasource.
 
     Args:
         datasource_type (DataSource): The datasource type to ingest.
@@ -39,7 +40,7 @@ def ingest_categories_task(
     async def _run_ingestion(
         datasource_type: DataSource,
     ):
-        """Run category ingestion for given datasource.
+        """Run subjects ingestion for given datasource.
 
         Args:
             datasource_type (DataSource): The datasource type to ingest.
@@ -49,11 +50,11 @@ def ingest_categories_task(
         """
         init_database()
         logger.info(
-            "Start running category ingestion task.",
+            "Start running subjects ingestion task.",
             extra={"datasource": datasource_type},
         )
 
-        new_categories = 0
+        new_subjects = 0
 
         try:
             db = DatabaseRepository()
@@ -78,28 +79,34 @@ def ingest_categories_task(
             async with AsyncClient(
                 timeout=Timeout(30), limits=Limits(max_connections=10)
             ) as http_client:
-                ingestion_service = CategoryIngestionService(_async_session_factory)
-                category_fetcher = CategoryFetcherFactory.get(
+                ingestion_service = SubjectsIngestionService(_async_session_factory)
+                subjects_fetcher = SubjectsFetcherFactory.get(
                     datasource_type, datasource_uuid, http_client
                 )
-                async for subject in category_fetcher.fetch_subjects():
-                    new_categories += await ingestion_service.ingest_subject(subject)
+                async for subject in subjects_fetcher.fetch_subjects():
+                    new_subjects += await ingestion_service.ingest_subject(subject)
 
             logger.info(
-                "Category ingestion task completed.",
-                extra={"datasource": datasource_type, "new_categories": new_categories},
+                "Subjects ingestion task completed.",
+                extra={"datasource": datasource_type, "new_subjects": new_subjects},
             )
-            # TODO: add metrics
 
         except Exception as e:
             logger.error(
-                "Error running category ingestion task",
+                "Error running subjects ingestion task",
                 exc_info=e,
-                extra={"datasource": datasource_type, "new_categories": new_categories},
+                extra={"datasource": datasource_type, "new_subjects": new_subjects},
             )
             raise e
         finally:
             await cleanup()
+
+        if new_subjects > 0:
+            Stats.incr(
+                "subjects_ingested_count",
+                count=new_subjects,
+                tags={"datasource": datasource_type, "date": str(date.today())},
+            )
 
     asyncio.run(_run_ingestion(datasource_type))
 

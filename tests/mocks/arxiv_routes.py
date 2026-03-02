@@ -3,7 +3,7 @@ from functools import lru_cache
 import httpx
 
 from common.constants.path import APP_ROOT
-from common.datasources.arxiv import ArxivCategoryFetcher, ArxivPaperMetadataFetcher
+from common.datasources.arxiv import ArxivPaperMetadataFetcher, ArxivSubjectsFetcher
 from tests.helpers.load_data import load_text_file
 
 DATA_DIR = APP_ROOT.joinpath("tests", "data", "common", "datasources", "arxiv")
@@ -55,7 +55,7 @@ def lazy_arxiv_router():
         request_params = dict(request.url.params)
         request_params = dict_to_url_params(request_params)
 
-        param = dict_to_url_params(ArxivCategoryFetcher.PARAMS)
+        param = dict_to_url_params(ArxivSubjectsFetcher.PARAMS)
         if param in request_params:
             return httpx.Response(
                 200,

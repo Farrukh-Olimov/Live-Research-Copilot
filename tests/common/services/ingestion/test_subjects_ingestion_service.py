@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from common.database.postgres.models import Datasource
 from common.database.postgres.repositories import DatabaseRepository
 from common.datasources.schema import SubjectSchema
-from common.services.ingestion import CategoryIngestionService
+from common.services.ingestion import SubjectsIngestionService
 
 
 @pytest.mark.asyncio
@@ -26,7 +26,7 @@ async def test_category_ingestion_single_subject(
     datasource = Datasource(id=datasource_uuid, name=datasource_uuid.hex)
 
     _db = DatabaseRepository()
-    service = CategoryIngestionService(async_session_factory)
+    service = SubjectsIngestionService(async_session_factory)
 
     subject = SubjectSchema(
         code="cs.AI",
@@ -80,7 +80,7 @@ async def test_category_ingestion_dubplicate_subject(
     datasource = Datasource(id=datasource_uuid, name=datasource_uuid.hex)
 
     _db = DatabaseRepository()
-    service = CategoryIngestionService(async_session_factory)
+    service = SubjectsIngestionService(async_session_factory)
 
     subject = SubjectSchema(
         code="cs.AI",
@@ -148,7 +148,7 @@ async def test_category_ingestion_batch(
     datasource = Datasource(id=datasource_uuid, name=datasource_uuid.hex)
 
     _db = DatabaseRepository()
-    service = CategoryIngestionService(async_session_factory)
+    service = SubjectsIngestionService(async_session_factory)
 
     subject_samples = [
         {"code": "cs.AI", "name": "Artificial Intelligence"},
@@ -200,6 +200,6 @@ async def test_empty_category_ingestion_batch(async_session_factory):
     Returns:
         None
     """
-    service = CategoryIngestionService(async_session_factory)
+    service = SubjectsIngestionService(async_session_factory)
 
     await service.ingest_subjects_batch([])

@@ -11,9 +11,9 @@ from common.utils.logger import LoggerManager
 logger = LoggerManager.get_logger(__name__)
 
 
-class CategoryIngestionService:
+class SubjectsIngestionService:
     def __init__(self, db_session_factory: async_sessionmaker[AsyncSession]):
-        """Initializes a CategoryIngestionService object.
+        """Initializes a SubjectsIngestionService object.
 
         Args:
             db_session_factory (async_sessionmaker): The async session factory.

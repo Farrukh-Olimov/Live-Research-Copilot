@@ -2,7 +2,7 @@ from typing import AsyncIterator, ClassVar, Dict, Optional
 import xml.etree.ElementTree as ET
 
 from common.datasources.arxiv.const import DATASOURCE_NAME, NAMESPACE
-from common.datasources.base import CategoryFetcher
+from common.datasources.base import SubjectsFetcher
 from common.datasources.schema import DomainSchema, SubjectSchema
 from common.utils.logger import LOG_MODULES, LoggerManager
 
@@ -10,7 +10,7 @@ LoggerManager._log_module = LOG_MODULES.APP
 logger = LoggerManager.get_logger(__name__)
 
 
-class ArxivCategoryFetcher(CategoryFetcher):
+class ArxivSubjectsFetcher(SubjectsFetcher):
     DATASOURCE_NAME: ClassVar[str] = DATASOURCE_NAME
 
     PARAMS = {"verb": "ListSets"}

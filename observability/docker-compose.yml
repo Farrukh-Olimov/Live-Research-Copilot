@@ -2,6 +2,8 @@ services:
   statsd-exporter:
     image: prom/statsd-exporter:latest
     container_name: statsd-exporter
+    mem_limit: 128m
+    cpus: "0.25"
     ports:
       - "8125:8125/udp"
       - "9102:9102"
@@ -12,6 +14,9 @@ services:
 
   prometheus:
     image: prom/prometheus:latest
+    mem_limit: 400m
+    memswap_limit: 600m
+    cpus: "0.5"
     container_name: prometheus
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
@@ -19,19 +24,23 @@ services:
       - "9090:9090"
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--storage.tsdb.retention.time=7d"
+      - "--storage.tsdb.retention.time=3d"
+      - "--query.max-concurrency=2"
     restart: unless-stopped
     depends_on:
       - statsd-exporter
 
   grafana:
     image: grafana/grafana:latest
+    mem_limit: 200m
+    cpus: "0.5"
     container_name: grafana
     ports:
       - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_LOG_LEVEL=warn
     restart: unless-stopped
     depends_on:
       - prometheus

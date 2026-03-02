@@ -2,7 +2,7 @@ from uuid import uuid4
 
 import pytest
 
-from common.datasources.arxiv import ArxivCategoryFetcher
+from common.datasources.arxiv import ArxivSubjectsFetcher
 from common.datasources.schema import SubjectSchema
 
 
@@ -15,7 +15,7 @@ async def test_arxiv_fetch_subjects(httpx_async_client):
     and asserts that the returned subjects are of type SubjectSchema and
     that at least one subject is returned.
     """
-    fetcher = ArxivCategoryFetcher(client=httpx_async_client, datasource_uuid=uuid4())
+    fetcher = ArxivSubjectsFetcher(client=httpx_async_client, datasource_uuid=uuid4())
     counter = 0
     async for subject in fetcher.fetch_subjects():
         assert isinstance(
@@ -35,7 +35,7 @@ def test_arxiv_parse_domain(httpx_async_client):
     It also asserts that the domain is cached in the domains dictionary.
     """
     domains = {}
-    fetcher = ArxivCategoryFetcher(client=httpx_async_client, datasource_uuid=uuid4())
+    fetcher = ArxivSubjectsFetcher(client=httpx_async_client, datasource_uuid=uuid4())
     fetcher._parse_set("cs", "Computer Science", domains)
 
     assert (

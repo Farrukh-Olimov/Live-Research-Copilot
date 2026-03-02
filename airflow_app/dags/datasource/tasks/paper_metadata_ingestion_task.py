@@ -1,9 +1,10 @@
 import asyncio
-from datetime import timedelta
+from datetime import date, timedelta
 from typing import List
 from uuid import UUID
 
 from airflow.sdk import task
+from airflow.stats import Stats
 from dags.datasource.schema import PaperIngestionStateRecord, SubjectIngestionRecord
 from httpx import AsyncClient, Limits, Timeout
 
@@ -194,6 +195,15 @@ def ingest_papers_task(subject_record: SubjectIngestionRecord):
         _db = DatabaseRepository()
 
         ingested_papers_count = 0
+
+        async with _async_session_factory() as session:
+            subject = await _db.subject.get_by_uuid(
+                subject_record.subject_uuid, session
+            )
+            datasource = await _db.datasource.get_by_uuid(
+                subject_record.datasource_uuid, session
+            )
+
         try:
             async with AsyncClient(
                 timeout=Timeout(30), limits=Limits(max_connections=10)
@@ -226,7 +236,16 @@ def ingest_papers_task(subject_record: SubjectIngestionRecord):
                 "num_papers_ingested": ingested_papers_count,
             },
         )
-        # TODO: add metrics
+        if ingested_papers_count > 0:
+            Stats.incr(
+                "ingested_papers_count",
+                count=ingested_papers_count,
+                tags={
+                    "datasource": datasource.name,
+                    "subject": subject.name,
+                    "date": str(date.today()),
+                },
+            )
 
     if subject_record is None:
         return None

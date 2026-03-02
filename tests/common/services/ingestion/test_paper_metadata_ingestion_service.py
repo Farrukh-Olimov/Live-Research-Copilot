@@ -8,13 +8,13 @@ from common.constants import DataSource
 from common.database.postgres.models import Author, Datasource, Domain, Subject
 from common.database.postgres.repositories import DatabaseRepository
 from common.datasources.factories import (
-    CategoryFetcherFactory,
     PaperMetadataIngestionFactory,
+    SubjectsFetcherFactory,
 )
 from common.datasources.schema import PaperMetadataRecord
 from common.services.ingestion import (
-    CategoryIngestionService,
     PaperMetadataIngestionService,
+    SubjectsIngestionService,
 )
 
 
@@ -210,12 +210,12 @@ class TestPaperMetadataIngestionService:
             )
             await session.commit()
 
-        category_fetcher = CategoryFetcherFactory.get(
+        category_fetcher = SubjectsFetcherFactory.get(
             DataSource.ARXIV, datasource.id, self._http_client
         )
-        category_ingestion = CategoryIngestionService(self._async_session_factory)
+        subjects_ingestion = SubjectsIngestionService(self._async_session_factory)
         async for subject in category_fetcher.fetch_subjects():
-            await category_ingestion.ingest_subject(subject)
+            await subjects_ingestion.ingest_subject(subject)
 
         async with self._async_session_factory() as session:
             subject = await self._database.subject.get_by_code(subject.code, session)

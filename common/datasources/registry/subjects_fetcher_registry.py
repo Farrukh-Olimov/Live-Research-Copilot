@@ -2,19 +2,19 @@ from logging import getLogger
 from threading import Lock
 from typing import Dict, List, Type, TypeVar
 
-from ..base import CategoryFetcher
+from ..base import SubjectsFetcher
 
 logger = getLogger(__name__)
 
-GenericCategoryFetcherType = TypeVar("CategoryFetcherType", bound=CategoryFetcher)
+GenericSubjectsFetcherType = TypeVar("CategoryFetcherType", bound=SubjectsFetcher)
 
 
-class CategoryFetcherRegistry:
-    _registry: Dict[str, Type[CategoryFetcher]] = {}
+class SubjectsFetcherRegistry:
+    _registry: Dict[str, Type[SubjectsFetcher]] = {}
     _lock: Lock = Lock()
 
     @classmethod
-    def get_schema(cls, datasource_name: str) -> Type[CategoryFetcher]:
+    def get_schema(cls, datasource_name: str) -> Type[SubjectsFetcher]:
         """Retrieves a schema class from the datasource registry.
 
         Args:
@@ -22,7 +22,7 @@ class CategoryFetcherRegistry:
                 schema for.
 
         Returns:
-            Type[CategoryFetcher]: The category fetcher class associated with the
+            Type[SubjectsFetcher]: The category fetcher class associated with the
               given datasource name.
 
         Raises:
@@ -45,12 +45,12 @@ class CategoryFetcherRegistry:
 
     @classmethod
     def register(
-        cls, schema_cls: GenericCategoryFetcherType
-    ) -> GenericCategoryFetcherType:
+        cls, schema_cls: GenericSubjectsFetcherType
+    ) -> GenericSubjectsFetcherType:
         """Registers a schema class with the datasource registry.
 
         Args:
-            schema_cls (GenericCategoryFetcherType): The category fetcher
+            schema_cls (GenericSubjectsFetcherType): The category fetcher
                 class to register.
 
         Notes:
