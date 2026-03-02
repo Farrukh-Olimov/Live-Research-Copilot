@@ -1,8 +1,7 @@
 import asyncio
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 
 from airflow.sdk import task
-from airflow.stats import Stats
 from httpx import AsyncClient, Limits, Timeout
 
 from common.constants import DataSource
@@ -10,6 +9,7 @@ from common.database.postgres.models import Datasource, PaperIngestionState
 from common.database.postgres.repositories import DatabaseRepository
 from common.database.postgres.session import cleanup, get_session_factory, init_database
 from common.datasources.factories import SubjectsFetcherFactory
+from common.metrics.stats_d import get_client
 from common.services.ingestion import SubjectsIngestionService
 from common.utils.logger import LOG_MODULES, LoggerManager
 
@@ -101,13 +101,6 @@ def ingest_subjects_task(
         finally:
             await cleanup()
 
-        if new_subjects > 0:
-            Stats.incr(
-                "subjects_ingested_count",
-                count=new_subjects,
-                tags={"datasource": datasource_type, "date": str(date.today())},
-            )
-
     asyncio.run(_run_ingestion(datasource_type))
 
 
@@ -176,3 +169,45 @@ def domain_ingestion_state_task(datasource_type: DataSource):
             await cleanup()
 
     asyncio.run(_run_task(datasource_type))
+
+
+@task(
+    retries=2,
+    retry_delay=timedelta(seconds=10),
+    retry_exponential_backoff=True,
+    max_retry_delay=timedelta(minutes=2),
+    sla=timedelta(minutes=5),
+    execution_timeout=timedelta(minutes=5),
+)
+def update_statistics():
+    """Update statistics for subjects ingested by datasource and domain."""
+
+    async def _run():
+        logger = LoggerManager.get_logger(__name__)
+        logger.info("Start updating statistics")
+        init_database()
+        _async_session_factory = get_session_factory()
+        _db = DatabaseRepository()
+
+        statsd = get_client()
+        total_subjects = 0
+        try:
+            async with _async_session_factory() as session:
+                domain2subjects = await _db.subject.get_subject_count_by_domain(session)
+
+            for domain_name, subjects_count in domain2subjects:
+                logger.info(f"Domain {domain_name} has {subjects_count} subjects")
+                statsd.gauge("subjects_ingested_by_domain_total", subjects_count)
+                total_subjects += subjects_count
+
+            statsd.gauge("subjects_ingested_total", total_subjects)
+
+        except Exception as e:
+            logger.error(
+                "Error running domain ingestion task",
+                exc_info=e,
+            )
+        finally:
+            await cleanup()
+
+    return asyncio.run(_run())

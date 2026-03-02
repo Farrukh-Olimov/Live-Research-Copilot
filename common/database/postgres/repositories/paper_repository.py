@@ -5,7 +5,7 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from common.database.postgres.models import Paper
+from common.database.postgres.models import Datasource, Paper
 from common.database.postgres.models.relationships import PaperSubject
 
 from .base_repository import BaseRepository
@@ -67,3 +67,22 @@ class PaperRepository(BaseRepository[Paper]):
         )
         rows = await session.execute(query)
         return rows.scalar_one()
+
+    async def get_paper_count_by_datasource(self, session: AsyncSession):
+        """Counts the number of papers by datasource.
+
+        Args:
+            session (AsyncSession): The database session.
+
+        Returns:
+            List[Tuple[UUID, int]]: A list of tuples containing the datasource name
+                and the paper count.
+        """
+        stmt = (
+            select(Datasource.name, func.count(Paper.id).label("paper_count"))
+            .select_from(Paper)
+            .join(Datasource, Paper.datasource_id == Datasource.id)
+            .group_by(Datasource.name)
+        )
+        row = await session.execute(stmt)
+        return row.all()

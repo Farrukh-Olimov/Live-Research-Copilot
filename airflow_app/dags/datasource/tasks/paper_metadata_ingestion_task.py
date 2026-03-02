@@ -1,16 +1,16 @@
 import asyncio
-from datetime import date, timedelta
+from datetime import timedelta
 from typing import List
 from uuid import UUID
 
 from airflow.sdk import task
-from airflow.stats import Stats
 from dags.datasource.schema import PaperIngestionStateRecord, SubjectIngestionRecord
 from httpx import AsyncClient, Limits, Timeout
 
 from common.database.postgres.repositories import DatabaseRepository
 from common.database.postgres.session import cleanup, get_session_factory, init_database
 from common.datasources.factories import PaperMetadataIngestionFactory
+from common.metrics.stats_d import get_client
 from common.services.ingestion import PaperMetadataIngestionService
 from common.utils.logger import LOG_MODULES, LoggerManager
 
@@ -35,10 +35,10 @@ def load_domain_ingestion_states() -> List[PaperIngestionStateRecord]:
         List[PaperIngestionStateRecord]: A list of domain ingestion states for the
             given datasource type.
     """
-    logger = LoggerManager.get_logger(__name__)
-    logger.info("Start loading domain ingestion states")
 
-    async def _run_ingestion():
+    async def _run():
+        logger = LoggerManager.get_logger(__name__)
+        logger.info("Start loading domain ingestion states")
         init_database()
         _async_session_factory = get_session_factory()
         _db = DatabaseRepository()
@@ -70,7 +70,7 @@ def load_domain_ingestion_states() -> List[PaperIngestionStateRecord]:
             await cleanup()
         return domain_state_records
 
-    return asyncio.run(_run_ingestion())
+    return asyncio.run(_run())
 
 
 @task(
@@ -94,13 +94,13 @@ def load_subject_to_ingest(
         List[SubjectIngestionRecord]: A list of subjects to ingest for the
             given ingestion state.
     """
-    logger = LoggerManager.get_logger(__name__)
-    logger.info(
-        "Start loading subject to ingest", extra={"ingestion_state": ingestion_state}
-    )
 
-    async def _run_ingestion(ingestion_state: PaperIngestionStateRecord):
-
+    async def _run(ingestion_state: PaperIngestionStateRecord):
+        logger = LoggerManager.get_logger(__name__)
+        logger.info(
+            "Start loading subject to ingest",
+            extra={"ingestion_state": ingestion_state},
+        )
         init_database()
         _async_session_factory = get_session_factory()
         _db = DatabaseRepository()
@@ -137,7 +137,7 @@ def load_subject_to_ingest(
     if ingestion_state is None:
         return None
     ingestion_state = PaperIngestionStateRecord.model_validate(ingestion_state)
-    return asyncio.run(_run_ingestion(ingestion_state))
+    return asyncio.run(_run(ingestion_state))
 
 
 @task(
@@ -185,25 +185,18 @@ def ingest_papers_task(subject_record: SubjectIngestionRecord):
     Returns:
         None
     """
-    logger = LoggerManager.get_logger(__name__)
-    logger.info("Start paper ingestion task", extra={"subject_record": subject_record})
 
-    async def _run_ingestion(subject_record: SubjectIngestionRecord):
+    async def _run(subject_record: SubjectIngestionRecord):
+        logger = LoggerManager.get_logger(__name__)
+        logger.info(
+            "Start paper ingestion task", extra={"subject_record": subject_record}
+        )
         init_database()
         _async_session_factory = get_session_factory()
         _factory = PaperMetadataIngestionFactory()
         _db = DatabaseRepository()
 
         ingested_papers_count = 0
-
-        async with _async_session_factory() as session:
-            subject = await _db.subject.get_by_uuid(
-                subject_record.subject_uuid, session
-            )
-            datasource = await _db.datasource.get_by_uuid(
-                subject_record.datasource_uuid, session
-            )
-
         try:
             async with AsyncClient(
                 timeout=Timeout(30), limits=Limits(max_connections=10)
@@ -236,21 +229,11 @@ def ingest_papers_task(subject_record: SubjectIngestionRecord):
                 "num_papers_ingested": ingested_papers_count,
             },
         )
-        if ingested_papers_count > 0:
-            Stats.incr(
-                "ingested_papers_count",
-                count=ingested_papers_count,
-                tags={
-                    "datasource": datasource.name,
-                    "subject": subject.name,
-                    "date": str(date.today()),
-                },
-            )
 
     if subject_record is None:
         return None
     subject_record = SubjectIngestionRecord.model_validate(subject_record)
-    return asyncio.run(_run_ingestion(subject_record))
+    return asyncio.run(_run(subject_record))
 
 
 @task(
@@ -267,10 +250,10 @@ def update_domain_ingestion_states():
     Returns:
         None
     """
-    logger = LoggerManager.get_logger(__name__)
-    logger.info("Start updating domain ingestion states")
 
-    async def _run_ingestions():
+    async def _runs():
+        logger = LoggerManager.get_logger(__name__)
+        logger.info("Start updating domain ingestion states")
         init_database()
         _async_session_factory = get_session_factory()
         _db = DatabaseRepository()
@@ -290,4 +273,63 @@ def update_domain_ingestion_states():
         finally:
             await cleanup()
 
-    return asyncio.run(_run_ingestions())
+    return asyncio.run(_runs())
+
+
+@task(
+    retries=2,
+    retry_delay=timedelta(seconds=10),
+    retry_exponential_backoff=True,
+    max_retry_delay=timedelta(minutes=2),
+    sla=timedelta(minutes=5),
+    execution_timeout=timedelta(minutes=5),
+)
+def update_statistics():
+    """Update statistics for papers ingested by datasource and subject."""
+
+    async def _run():
+        logger = LoggerManager.get_logger(__name__)
+        logger.info("Start updating statistics")
+        init_database()
+        _async_session_factory = get_session_factory()
+        _db = DatabaseRepository()
+
+        statsd = get_client()
+        try:
+            async with _async_session_factory() as session:
+                datasource2papers = await _db.paper.get_paper_count_by_datasource(
+                    session
+                )
+                subjects2papers = await _db.paper_subject.get_paper_count_by_subject(
+                    session
+                )
+
+            papers_total = 0
+            for datasource_name, papers_count in datasource2papers:
+                logger.info(f"Datasource {datasource_name} has {papers_count} papers")
+                statsd.gauge(
+                    "papers_ingested_by_datasource_total",
+                    papers_count,
+                    tags={"datasource": datasource_name},
+                )
+                papers_total += papers_count
+
+            statsd.gauge("papers_ingested_total", papers_total)
+
+            for subject_name, papers_count in subjects2papers:
+                logger.info(f"Subject {subject_name} has {papers_count} papers")
+                statsd.gauge(
+                    "papers_ingested_by_subject_total",
+                    papers_count,
+                    tags={"subject": subject_name},
+                )
+
+        except Exception as e:
+            logger.error(
+                "Error running domain ingestion task",
+                exc_info=e,
+            )
+        finally:
+            await cleanup()
+
+    return asyncio.run(_run())

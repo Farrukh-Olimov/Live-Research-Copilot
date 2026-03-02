@@ -1,10 +1,10 @@
 from typing import List, Optional
 
-from sqlalchemy import UUID, select
+from sqlalchemy import UUID, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from common.database.postgres.models import Subject
+from common.database.postgres.models import Domain, Subject
 from common.database.postgres.repositories.base_repository import BaseRepository
 
 
@@ -60,3 +60,21 @@ class SubjectRepository(BaseRepository[Subject]):
     async def delete_subject(self, subject: Subject, session: AsyncSession):
         """Deletes a subject."""
         await session.delete(subject)
+
+    async def get_subject_count_by_domain(self, session: AsyncSession):
+        """Returns a list of tuples containing the domain name and the subject count.
+
+        Args:
+            session (AsyncSession): The database session.
+
+        Returns:
+            List[Tuple[str, int]]: A list of tuples (domain name, subject count).
+        """
+        stmt = (
+            select(Domain.name, func.count(Subject.id).label("subject_count"))
+            .select_from(Subject)
+            .join(Domain, Subject.domain_id == Domain.id)
+            .group_by(Domain.name)
+        )
+        row = await session.execute(stmt)
+        return row.all()

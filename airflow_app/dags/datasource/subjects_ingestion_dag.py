@@ -1,9 +1,10 @@
-from airflow.sdk import chain, dag
+from airflow.sdk import TriggerRule, chain, dag
 from pendulum import datetime
 
-from airflow_app.dags.datasource.tasks.subjects_ingestion_task import (
+from dags.datasource.tasks.subjects_ingestion_task import (
     domain_ingestion_state_task,
     ingest_subjects_task,
+    update_statistics,
 )
 from common.constants import DataSource
 from common.utils.logger import LOG_MODULES, LoggerManager
@@ -24,9 +25,11 @@ def category_ingestion_dag():
 
     Schedules the task to run once a month.
     """
+    stats = update_statistics.override(trigger_rule=TriggerRule.ALL_DONE)()
     chain(
         [ingest_subjects_task(datasource_type=DataSource.ARXIV)],
         [domain_ingestion_state_task(datasource_type=DataSource.ARXIV)],
+        [stats],
     )
 
 

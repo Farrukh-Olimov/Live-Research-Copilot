@@ -5,6 +5,7 @@ from dags.datasource.tasks.paper_metadata_ingestion_task import (
     load_domain_ingestion_states,
     load_subject_to_ingest,
     update_domain_ingestion_states,
+    update_statistics,
 )
 from pendulum import datetime
 
@@ -34,6 +35,8 @@ def paper_metadata_ingestion_dag():
         subject_record=flattened_subject_candidates
     )
     ingested_tasks.set_downstream(update_domain_ingestion_states())
+
+    update_statistics()
 
 
 dag_variable = paper_metadata_ingestion_dag()
