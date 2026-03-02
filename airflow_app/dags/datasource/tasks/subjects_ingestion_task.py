@@ -197,10 +197,13 @@ def update_statistics():
 
             for domain_name, subjects_count in domain2subjects:
                 logger.info(f"Domain {domain_name} has {subjects_count} subjects")
-                statsd.gauge("subjects_ingested_by_domain_total", subjects_count)
+                statsd.gauge(
+                    f"subjects.ingested.by_domain.total.{domain_name}",
+                    subjects_count,
+                )
                 total_subjects += subjects_count
 
-            statsd.gauge("subjects_ingested_total", total_subjects)
+            statsd.gauge("subjects.ingested.total", total_subjects)
 
         except Exception as e:
             logger.error(

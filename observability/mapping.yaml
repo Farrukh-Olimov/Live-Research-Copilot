@@ -1,0 +1,15 @@
+mappings:
+  - match: "papers.ingested.by_datasource.total.*"
+    name: "papers_ingested_by_datasource_total"
+    labels:
+      datasource: "$1"
+    
+  - match: "subjects.ingested.by_domain.total.*"
+    name: "subjects_ingested_by_domain_total"
+    labels:
+      domain: "$1"
+
+  - match: "papers.ingested.by_subject.total.*"
+    name: "papers_ingested_by_subject_total"
+    labels:
+      subject: "$1"

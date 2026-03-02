@@ -20,17 +20,18 @@ logger = LoggerManager.get_logger(__name__)
     tags=["category_ingestion"],
     max_active_runs=1,
 )
-def category_ingestion_dag():
+def subjects_ingestion_dag():
     """A dag that runs the category ingestion task for all datasources.
 
     Schedules the task to run once a month.
     """
-    stats = update_statistics.override(trigger_rule=TriggerRule.ALL_DONE)()
+    stats = update_statistics.override(trigger_rule=TriggerRule.ALL_DONE)
+
     chain(
         [ingest_subjects_task(datasource_type=DataSource.ARXIV)],
         [domain_ingestion_state_task(datasource_type=DataSource.ARXIV)],
-        [stats],
+        [stats()],
     )
 
 
-category_ingestion_dag()
+subjects_ingestion_dag()

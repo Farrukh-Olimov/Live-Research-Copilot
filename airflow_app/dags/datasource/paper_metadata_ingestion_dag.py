@@ -1,4 +1,4 @@
-from airflow.sdk import dag
+from airflow.sdk import dag, TriggerRule
 from dags.datasource.tasks.paper_metadata_ingestion_task import (
     flatten,
     ingest_papers_task,
@@ -34,9 +34,11 @@ def paper_metadata_ingestion_dag():
     ingested_tasks = ingest_papers_task.expand(
         subject_record=flattened_subject_candidates
     )
-    ingested_tasks.set_downstream(update_domain_ingestion_states())
+    updated_states = update_domain_ingestion_states()
+    updated_statistics = update_statistics.override(trigger_rule=TriggerRule.ALL_DONE)()
 
-    update_statistics()
+    ingested_tasks >> updated_states
+    updated_states >> updated_statistics
 
 
 dag_variable = paper_metadata_ingestion_dag()

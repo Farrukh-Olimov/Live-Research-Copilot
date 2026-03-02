@@ -308,21 +308,31 @@ def update_statistics():
             for datasource_name, papers_count in datasource2papers:
                 logger.info(f"Datasource {datasource_name} has {papers_count} papers")
                 statsd.gauge(
-                    "papers_ingested_by_datasource_total",
+                    f"papers.ingested.by_datasource.total.{datasource_name}",
                     papers_count,
-                    tags={"datasource": datasource_name},
                 )
                 papers_total += papers_count
 
-            statsd.gauge("papers_ingested_total", papers_total)
+            statsd.gauge("papers.ingested.total", papers_total)
 
-            for subject_name, papers_count in subjects2papers:
+            subjects2papers = list(
+                sorted(subjects2papers, key=lambda x: x[1], reverse=True)
+            )
+
+            for subject_name, papers_count in subjects2papers[:9]:
                 logger.info(f"Subject {subject_name} has {papers_count} papers")
                 statsd.gauge(
-                    "papers_ingested_by_subject_total",
+                    f"papers.ingested.by_subject.total.{subject_name}",
                     papers_count,
-                    tags={"subject": subject_name},
                 )
+            other_paper_counts = sum(
+                [papers_count for _, papers_count in subjects2papers[9:]]
+            )
+            logger.info(f"Other subjects has {other_paper_counts} papers")
+            statsd.gauge(
+                f"papers.ingested.by_subject.total.other",
+                other_paper_counts,
+            )
 
         except Exception as e:
             logger.error(

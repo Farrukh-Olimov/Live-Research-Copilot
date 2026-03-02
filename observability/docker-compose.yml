@@ -7,7 +7,10 @@ services:
     ports:
       - "8125:8125/udp"
       - "9102:9102"
+    volumes:
+      - ./mapping.yaml:/etc/statsd/mapping.yaml:ro
     command:
+      - "--statsd.mapping-config=/etc/statsd/mapping.yaml"
       - "--statsd.listen-udp=:8125"
       - "--web.listen-address=:9102"
     restart: unless-stopped
