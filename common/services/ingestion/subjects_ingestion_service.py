@@ -6,14 +6,14 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from common.database.postgres.models import Domain, Subject
 from common.database.postgres.repositories import DatabaseRepository
 from common.datasources.schema import SubjectSchema
-from common.utils.logger.logger_config import LoggerManager
+from common.utils.logger import LoggerManager
 
 logger = LoggerManager.get_logger(__name__)
 
 
-class CategoryIngestionService:
+class SubjectsIngestionService:
     def __init__(self, db_session_factory: async_sessionmaker[AsyncSession]):
-        """Initializes a CategoryIngestionService object.
+        """Initializes a SubjectsIngestionService object.
 
         Args:
             db_session_factory (async_sessionmaker): The async session factory.
@@ -40,21 +40,12 @@ class CategoryIngestionService:
                 )
 
                 if not domain:
-                    try:
-                        domain = Domain(
-                            code=subject.domain.code,
-                            name=subject.domain.name,
-                            datasource_id=subject.domain.datasource_uuid,
-                        )
-                        domain = await self._db.domain.create(domain, session)
-                    except IntegrityError:
-                        logger.warning(
-                            "Domain code already exists",
-                            extra={"domain": subject.domain},
-                        )
-                        domain = await self._db.domain.get_by_code(
-                            subject.domain.code, subject.domain.datasource_uuid, session
-                        )
+                    domain = Domain(
+                        code=subject.domain.code,
+                        name=subject.domain.name,
+                        datasource_id=subject.domain.datasource_uuid,
+                    )
+                    domain = await self._db.domain.create(domain, session)
 
                 existing_subject = await self._db.subject.get_by_code(
                     subject.code, session
@@ -69,9 +60,10 @@ class CategoryIngestionService:
                         )
                         await self._db.subject.create(new_subject, session)
                     except IntegrityError:
-                        logger.warning(
+                        logger.info(
                             "Subject already exists", extra={"subject": subject}
                         )
+                return not existing_subject
 
     async def ingest_subjects_batch(self, subjects: List[SubjectSchema]):
         """Ingests a batch of subjects and their domains into the database.
@@ -83,7 +75,7 @@ class CategoryIngestionService:
             None
         """
         if not subjects:
-            logger.info("No subjects to ingest")
+            logger.debug("No subjects to ingest")
             return
         async with self._db_session_factory() as session:
             async with session.begin():
@@ -100,7 +92,6 @@ class CategoryIngestionService:
                     for domain in existing_domains
                 }
 
-                new_domains = []
                 for subject in subjects:
                     domain_code = subject.domain.code
                     datasource_uuid = subject.domain.datasource_uuid
@@ -110,11 +101,8 @@ class CategoryIngestionService:
                             name=subject.domain.name,
                             datasource_id=datasource_uuid,
                         )
-                        new_domains.append(domain)
+                        domain = await self._db.domain.create(domain, session)
                         domain_map[(domain_code, datasource_uuid)] = domain
-
-                if new_domains:
-                    await self._db.domain.create_many(new_domains, session)
 
                 subject_codes = {subject.code for subject in subjects}
                 existing_subjects = await self._db.subject.get_by_codes(
@@ -122,7 +110,6 @@ class CategoryIngestionService:
                 )
                 subject_map = {subject.code: subject for subject in existing_subjects}
 
-                new_subjects = []
                 for subject in subjects:
                     if subject.code not in subject_map:
                         domain_code = subject.domain.code
@@ -133,11 +120,8 @@ class CategoryIngestionService:
                             name=subject.name,
                             domain_id=domain.id,
                         )
-                        new_subjects.append(subject)
+                        subject = await self._db.subject.create(subject, session)
                         subject_map[subject.code] = subject
-
-                if new_subjects:
-                    await self._db.subject.create_many(new_subjects, session)
 
     async def delete_subject(self, subject: SubjectSchema):
         """Removes only a subject from the database.

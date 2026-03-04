@@ -17,7 +17,8 @@ dependencies = [
   "greenlet (>=3.3.1,<4.0.0)",
   "psycopg2-binary (>=2.9.11,<3.0.0)",
   "python-dotenv (>=1.2.1,<2.0.0)",
-  "qdrant-client (>=1.16.1,<2.0.0)"
+  "qdrant-client (>=1.16.1,<2.0.0)",
+  "statsd (>=4.0.1,<5.0.0)"
 ]
 
 [tool.black]

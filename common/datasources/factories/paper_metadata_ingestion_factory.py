@@ -11,14 +11,12 @@ class PaperMetadataIngestionFactory:
 
     @overload
     @staticmethod
-    def create(
+    def get(
         datasource_type: DataSource.ARXIV, client: AsyncClient
     ) -> ArxivPaperMetadataIngestion: ...
 
     @staticmethod
-    def create(
-        datasource_type: DataSource, client: AsyncClient
-    ) -> PaperMetadataIngestion:
+    def get(datasource_type: DataSource, client: AsyncClient) -> PaperMetadataIngestion:
         """Creates a paper metadata ingestion object based on the ingestion type.
 
         Args:
@@ -31,7 +29,8 @@ class PaperMetadataIngestionFactory:
         Raises:
             KeyError: If the datasource_type type is unknown.
         """
-        if datasource_type == DataSource.ARXIV:
-            return ArxivPaperMetadataIngestion(client)
-        else:
-            raise KeyError(f"Unknown datasource type: {datasource_type}")
+        match datasource_type:
+            case DataSource.ARXIV:
+                return ArxivPaperMetadataIngestion(client)
+            case _:
+                raise KeyError(f"Unknown datasource type: {datasource_type}")

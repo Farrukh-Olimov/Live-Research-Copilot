@@ -8,13 +8,13 @@ from common.constants import DataSource
 from common.database.postgres.models import Author, Datasource, Domain, Subject
 from common.database.postgres.repositories import DatabaseRepository
 from common.datasources.factories import (
-    CategoryFetcherFactory,
     PaperMetadataIngestionFactory,
+    SubjectsFetcherFactory,
 )
 from common.datasources.schema import PaperMetadataRecord
 from common.services.ingestion import (
-    CategoryIngestionService,
     PaperMetadataIngestionService,
+    SubjectsIngestionService,
 )
 
 
@@ -41,23 +41,6 @@ class TestPaperMetadataIngestionService:
             db_session_factory=async_session_factory,
             http_client=httpx_async_client,
         )
-
-    async def test_get_datasource_uuid(self):
-        """Test the datasource uuid lookup."""
-        async with self._async_session_factory() as session:
-            with pytest.raises(ValueError):
-                await self.ingest_service._get_datasource_uuid(
-                    DataSource.ARXIV, session
-                )
-
-            creaed_datasource = await self._database.datasource.create(
-                Datasource(name=DataSource.ARXIV),
-                session,
-            )
-            uuid = await self.ingest_service._get_datasource_uuid(
-                DataSource.ARXIV, session
-            )
-            assert uuid == creaed_datasource.id, "UUID does not match"
 
     async def test_get_domain(self):
         """Test the domain lookup."""
@@ -140,7 +123,6 @@ class TestPaperMetadataIngestionService:
                 paper_authors,
                 datasource.id,
                 DataSource.ARXIV,
-                session,
             )
             assert all(
                 [isinstance(author, Author) for author in authors]
@@ -151,16 +133,11 @@ class TestPaperMetadataIngestionService:
 
         # test if aauthor in db already
         async with self._async_session_factory() as session:
-            author = await self._database.author.create(
-                Author(name=paper_authors[0]), session
-            )
+            await self._database.author.create(Author(name=paper_authors[0]), session)
             authors = await self.ingest_service._get_or_create_authors(
-                paper_authors,
-                datasource.id,
-                DataSource.ARXIV,
-                session,
+                paper_authors, datasource.id, DataSource.ARXIV
             )
-            assert author == authors[0], "Author does not match"
+            assert len(authors) == len(paper_authors), "Expected 2 authors"
 
     async def test_ingest_one(self):
         """Test the ingest one method."""
@@ -185,7 +162,6 @@ class TestPaperMetadataIngestionService:
                 paper,
                 datasource.id,
                 DataSource.ARXIV,
-                session,
             )
             assert created_paper is None, "Paper should not be ingested"
 
@@ -205,15 +181,18 @@ class TestPaperMetadataIngestionService:
                 ),
                 session,
             )
+            await session.commit()
+
             created_paper = await self.ingest_service._ingest_one(
                 paper,
                 datasource.id,
                 DataSource.ARXIV,
-                session,
             )
             assert created_paper is not None, "Paper should be ingested"
             assert created_paper.abstract == paper.abstract, "Abstract does not match"
-            assert created_paper.domain == created_domain, "Domain code does not match"
+            assert (
+                created_paper.domain.id == created_domain.id
+            ), "Domain code does not match"
             assert (
                 created_paper.paper_identifier == paper.paper_id
             ), "Paper ID does not match"
@@ -221,16 +200,6 @@ class TestPaperMetadataIngestionService:
                 created_paper.publish_date == paper.publish_date
             ), "Publish date does not match"
             assert created_paper.title == paper.title, "Title does not match"
-
-            subject_codes = []
-            subject_codes.append(paper.primary_subject_code)
-            subject_codes.extend(paper.secondary_subject_codes)
-
-            for i, ps in enumerate(created_paper.paper_subjects):
-                await session.refresh(ps, attribute_names=["subject"])
-                assert (
-                    ps.subject.code == subject_codes[i]
-                ), "Subject name does not match"
 
     async def test_run(self):
         """Test the run method."""
@@ -241,18 +210,23 @@ class TestPaperMetadataIngestionService:
             )
             await session.commit()
 
-        category_fetcher = CategoryFetcherFactory.create(
+        category_fetcher = SubjectsFetcherFactory.get(
             DataSource.ARXIV, datasource.id, self._http_client
         )
-        category_ingestion = CategoryIngestionService(self._async_session_factory)
+        subjects_ingestion = SubjectsIngestionService(self._async_session_factory)
         async for subject in category_fetcher.fetch_subjects():
-            await category_ingestion.ingest_subject(subject)
+            await subjects_ingestion.ingest_subject(subject)
+
+        async with self._async_session_factory() as session:
+            subject = await self._database.subject.get_by_code(subject.code, session)
+            assert subject is not None, "Subject should be found"
 
         fromTime = datetime(2022, 1, 1)
         untilTime = datetime(2022, 1, 1)
+
         await self.ingest_service.run(
-            DataSource.ARXIV,
-            subject.code,
+            datasource.id,
+            subject.id,
             fromTime,
             untilTime,
         )

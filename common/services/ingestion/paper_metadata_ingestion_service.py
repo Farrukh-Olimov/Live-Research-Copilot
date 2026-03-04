@@ -1,8 +1,10 @@
+import asyncio
 from datetime import datetime
-from typing import List, Optional
+from typing import ClassVar, List, Optional
 from uuid import UUID
 
 from httpx import AsyncClient
+from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from common.constants import DataSource
@@ -11,12 +13,14 @@ from common.database.postgres.models.relationships import PaperSubject
 from common.database.postgres.repositories import DatabaseRepository
 from common.datasources.factories import PaperMetadataIngestionFactory
 from common.datasources.schema import PaperMetadataRecord
-from common.utils.logger.logger_config import LoggerManager
+from common.utils.logger import LoggerManager
 
 logger = LoggerManager.get_logger(__name__)
 
 
 class PaperMetadataIngestionService:
+    INGESTION_BATCH_SIZE: ClassVar[int] = 20
+
     def __init__(
         self,
         factory: PaperMetadataIngestionFactory,
@@ -67,7 +71,7 @@ class PaperMetadataIngestionService:
         """
         paper = await self._db.paper.get_by_paper_id(paper_metadata.paper_id, session)
         if paper:
-            logger.info(
+            logger.debug(
                 "Paper already exists",
                 extra={"paper": paper.title, "paper_id": paper.id},
             )
@@ -85,7 +89,7 @@ class PaperMetadataIngestionService:
 
         paper = await self._db.paper.create(paper, session)
         if paper is None:
-            logger.error(
+            logger.warning(
                 "Failed to create paper",
                 extra={
                     "paper": paper_metadata.title,
@@ -112,15 +116,14 @@ class PaperMetadataIngestionService:
 
     async def _ingest_one(
         self,
-        paper: PaperMetadataRecord,
+        paper_metadata: PaperMetadataRecord,
         datasource_uuid: UUID,
         datasource_type: DataSource,
-        session: AsyncSession,
     ) -> Optional[Paper]:
         """Orchestrates the ingestion of a paper.
 
         Args:
-            paper (PaperMetadataRecord): The paper to ingest.
+            paper_metadata (PaperMetadataRecord): The paper metadata to ingest.
             datasource_uuid (UUID): The UUID of the datasource.
             datasource_type (DataSource): The type of the datasource.
             session (AsyncSession): The database session.
@@ -128,96 +131,129 @@ class PaperMetadataIngestionService:
         Returns:
             Optional[Paper]: The ingested paper, or None if the ingestion failed.
         """
-        domain = await self._get_domain(
-            paper.domain_code, datasource_uuid, datasource_type, session
-        )
-        if domain is None:
-            return None
+        async with self._db_session_factory() as session:
+            async with session.begin():
+                domain = await self._get_domain(
+                    paper_metadata.domain_code,
+                    datasource_uuid,
+                    datasource_type,
+                    session,
+                )
+                if domain is None:
+                    return None
 
-        # Get subjects
-        subject = await self._get_subject(
-            paper.primary_subject_code,
-            datasource_uuid,
-            datasource_type,
-            session,
-        )
-        if subject is None:
-            return None
+                # Get subjects
+                subject = await self._get_subject(
+                    paper_metadata.primary_subject_code,
+                    datasource_uuid,
+                    datasource_type,
+                    session,
+                )
+                if subject is None:
+                    return None
 
-        secondary_subjects = await self._db.subject.get_by_codes(
-            paper.secondary_subject_codes, session
-        )
+                secondary_subjects = await self._db.subject.get_by_codes(
+                    paper_metadata.secondary_subject_codes, session
+                )
 
-        authors = await self._get_or_create_authors(
-            paper.authors, datasource_uuid, datasource_type, session
-        )
-        if not authors:
-            return None
+                authors = await self._get_or_create_authors(
+                    paper_metadata.authors, datasource_uuid, datasource_type
+                )
+                if not authors:
+                    return None
 
-        paper = await self._get_or_create_paper(
-            paper,
-            authors,
-            domain,
-            subject,
-            secondary_subjects,
-            datasource_uuid,
-            session,
-        )
-        return paper
+                paper = await self._get_or_create_paper(
+                    paper_metadata,
+                    authors,
+                    domain,
+                    subject,
+                    secondary_subjects,
+                    datasource_uuid,
+                    session,
+                )
+                return paper
 
     async def run(
         self,
-        datasource_type: DataSource,
-        subject: str,
+        datasource_uuid: UUID,
+        subject_uuid: UUID,
         from_date: datetime,
         until_date: datetime,
-    ):
+    ) -> int:
         """Runs the paper metadata ingestion given subject and date range.
 
         Args:
-            datasource_type (DataSource): The datasource type to ingest.
-            subject (str): The subject to ingest.
+            datasource_uuid (UUID): The datasource UUID.
+            subject_uuid (str): The subject code to ingest.
             from_date (datetime): The from date to ingest.
             until_date (datetime): The until date to ingest.
 
-        Yields:
-            AsyncIterator[PaperMetadataRecord]: An asynchronous iterator
-                of paper metadata records.
+        Returns:
+            int: The number of papers ingested.
         """
-        ingestion = self._factory.create(datasource_type, self._http_client)
-        datasource_uuid = None
-
+        ingested_papers_count = 0
         async with self._db_session_factory() as session:
-            datasource_uuid = await self._get_datasource_uuid(datasource_type, session)
+            async with session.begin():
+                subject_code = await self._get_subject_code(subject_uuid, session)
+                datasource_type = await self._get_datasource_type(
+                    datasource_uuid, session
+                )
 
-        async for paper in ingestion.run(subject, from_date, until_date):
-            async with self._db_session_factory() as session:
-                async with session.begin():
-                    await self._ingest_one(
-                        paper, datasource_uuid, datasource_type, session
-                    )
+        ingestion = self._factory.get(datasource_type, self._http_client)
 
-    async def _get_datasource_uuid(
-        self, datasource_type: DataSource, session: AsyncSession
-    ):
-        """Returns the UUID of the datasource with the given type.
+        jobs = []
+        async for paper in ingestion.run(subject_code, from_date, until_date):
+            if paper is None:
+                continue
+            jobs.append(self._ingest_one(paper, datasource_uuid, datasource_type))
+            if len(jobs) >= self.INGESTION_BATCH_SIZE:
+                await asyncio.gather(*jobs)
+                ingested_papers_count += len(jobs)
+                jobs.clear()
+
+        if jobs:
+            await asyncio.gather(*jobs)
+            ingested_papers_count += len(jobs)
+
+        return ingested_papers_count
+
+    async def _get_datasource_type(self, datasource_uuid: UUID, session: AsyncSession):
+        """Returns the type of the datasource with the given UUID.
 
         Args:
-            datasource_type (DataSource): The type of the datasource to find.
+            datasource_uuid (UUID): The UUID of the datasource to find.
             session (AsyncSession): The database session.
 
         Returns:
-            UUID: The UUID of the datasource.
+            str: The type of the datasource.
 
         Raises:
             ValueError: If the datasource is not found.
         """
-        datasource_uuid = await self._db.datasource.get_uuid_by_name(
-            datasource_type, session
-        )
-        if datasource_uuid is None:
-            raise ValueError(f"{datasource_type} datasource is not found")
-        return datasource_uuid
+        datasource = await self._db.datasource.get_by_uuid(datasource_uuid, session)
+        if not datasource:
+            raise ValueError("Datasource not found")
+
+        return datasource.name
+
+    async def _get_subject_code(self, subject_uuid: UUID, session: AsyncSession):
+        """Returns the code of the subject with the given UUID.
+
+        Args:
+            subject_uuid (UUID): The UUID of the subject to find.
+            session (AsyncSession): The database session.
+
+        Returns:
+            str: The code of the subject.
+
+        Raises:
+            ValueError: If the subject is not found.
+        """
+        subject = await self._db.subject.get_by_uuid(subject_uuid, session)
+        if not subject:
+            raise ValueError("Subject not found")
+
+        return subject.code
 
     async def _get_domain(
         self,
@@ -241,7 +277,7 @@ class PaperMetadataIngestionService:
             domain_code, datasource_uuid, session
         )
         if domain is None:
-            logger.error(
+            logger.warning(
                 "Domain not found",
                 extra={
                     "domain_code": domain_code,
@@ -271,7 +307,7 @@ class PaperMetadataIngestionService:
         """
         subject = await self._db.subject.get_by_code(subject_code, session)
         if subject is None:
-            logger.error(
+            logger.warning(
                 "Subject not found",
                 extra={
                     "subject_code": subject_code,
@@ -286,7 +322,6 @@ class PaperMetadataIngestionService:
         paper_authors: List[str],
         datasource_uuid: UUID,
         datasource_type: DataSource,
-        session: AsyncSession,
     ) -> List[Author]:
         """Gets or creates authors in the database.
 
@@ -300,28 +335,42 @@ class PaperMetadataIngestionService:
             List[Author]: The authors found or created.
         """
         # Get Authors
-        database_authors = await self._db.author.get_by_names(paper_authors, session)
-        authors = []
-        if len(database_authors) != len(paper_authors):
-            author_names = [author.name for author in database_authors]
-            for paper_author in paper_authors:
-                if paper_author not in author_names:
-                    logger.info("Creating author", extra={"author": paper_author})
-                    author = Author(name=paper_author)
-                    authors.append(await self._db.author.create(author, session))
-                else:
-                    index = author_names.index(paper_author)
-                    authors.append(database_authors[index])
-        else:
-            authors = database_authors
+        database_authors = []
+        max_retry = 5
+        for paper_author in paper_authors:
+            for retry in range(max_retry):
+                async with self._db_session_factory() as session:
+                    async with session.begin():
+                        try:
+                            author = Author(name=paper_author)
+                            database_authors.append(
+                                await self._db.author.create(author, session)
+                            )
+                            break
+                        except DBAPIError as e:
+                            if "deadlock detected" in str(e) and retry < max_retry:
+                                logger.warning(
+                                    "Deadlock detected, retrying",
+                                    exc_info=True,
+                                    extra={
+                                        "paper_author": paper_author,
+                                        "datasource": datasource_type,
+                                        "datasource_uuid": datasource_uuid,
+                                        "retry": retry,
+                                        "max_retry": max_retry,
+                                    },
+                                )
+                                await asyncio.sleep(1)
+                                continue
+                            break
 
-        if not authors:
-            logger.error(
-                "No authors found",
+        if len(database_authors) != len(paper_authors):
+            logger.warning(
+                "Error getting or creating authors",
                 extra={
                     "authors": paper_authors,
                     "datasource": datasource_type,
                     "datasource_uuid": datasource_uuid,
                 },
             )
-        return authors
+        return database_authors

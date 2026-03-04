@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 from common.datasources.arxiv.const import DATASOURCE_NAME, NAMESPACE
 from common.datasources.arxiv.schema import ArxivPaperMetadataRecord
 from common.datasources.base import PaperMetadataParser
-from common.utils.logger.logger_config import LoggerManager
+from common.utils.logger import LoggerManager
 
 logger = LoggerManager.get_logger(__name__)
 
@@ -161,6 +161,6 @@ class ArxivPaperMetadataParser(PaperMetadataParser[ArxivPaperMetadataRecord]):
         resumption_token = None
         root = ET.fromstring(raw_data)
         token_el = root.find(".//oai:resumptionToken", NAMESPACE)
-        if token_el is not None:
+        if token_el is not None and token_el.text is not None:
             resumption_token = token_el.text.strip()
         return resumption_token

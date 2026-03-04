@@ -29,13 +29,12 @@ def init_database():
         _async_engine = create_async_engine(
             ASYNC_DATABASE_URL,
             echo=False,
-            max_overflow=int(os.getenv("POSTGRES_MAX_OVERFLOW", 5)),
-            pool_size=int(os.getenv("POSTGRES_POOL_SIZE", 10)),
-            pool_timeout=int(os.getenv("POSTGRES_POOL_TIMEOUT", 60)),
-            pool_recycle=int(os.getenv("POSTGRES_POOL_RECYCLE", 3600)),
+            max_overflow=int(os.getenv("POSTGRES_MAX_OVERFLOW", 10)),
+            pool_size=int(os.getenv("POSTGRES_POOL_SIZE", 30)),
+            pool_timeout=int(os.getenv("POSTGRES_POOL_TIMEOUT", 120)),
+            pool_recycle=int(os.getenv("POSTGRES_POOL_RECYCLE", 1800)),
         )
 
-    if _async_session_factory is None:
         _async_session_factory = async_sessionmaker(
             _async_engine, expire_on_commit=False
         )
@@ -66,6 +65,8 @@ async def get_session() -> AsyncGenerator:
 async def cleanup():
     """Call on app shutdown."""
     global _async_engine
+    global _async_session_factory
     if _async_engine:
         await _async_engine.dispose()
         _async_engine = None
+        _async_session_factory = None

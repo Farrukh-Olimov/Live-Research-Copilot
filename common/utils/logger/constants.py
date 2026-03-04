@@ -1,11 +1,17 @@
 from enum import Enum
+import logging
 
 
-class LogLevel(str, Enum):
+class LogLevel(int, Enum):
     """Logging levels."""
 
-    DEBUG = "DEBUG"
-    INFO = "INFO"
-    WARNING = "WARNING"
-    ERROR = "ERROR"
-    CRITICAL = "CRITICAL"
+    DEBUG = logging.DEBUG
+    INFO = logging.INFO
+    WARNING = logging.WARNING
+    ERROR = logging.ERROR
+    CRITICAL = logging.CRITICAL
+
+
+class LOG_MODULES(Enum):
+    APP = "app"
+    AIRFLOW = "airflow"

@@ -1,7 +1,9 @@
 from typing import List
 
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from common.database.postgres.models import Subject
 from common.database.postgres.models.relationships import PaperSubject
 
 from .base_repository import BaseRepository
@@ -27,3 +29,21 @@ class PaperSubjectRepository(BaseRepository[PaperSubject]):
         """Add subjects to a paper."""
         session.add_all(paper_subjects)
         await session.flush()
+
+    async def get_paper_count_by_subject(self, session: AsyncSession):
+        """Returns a list of tuples containing the subject name and the paper count.
+
+        Args:
+            session (AsyncSession): The database session.
+
+        Returns:
+            List[Tuple[str, int]]: A list of tuples (subject name, paper count).
+        """
+        stmt = (
+            select(Subject.name, func.count(PaperSubject.paper_id).label("paper_count"))
+            .select_from(PaperSubject)
+            .join(Subject, PaperSubject.subject_id == Subject.id)
+            .group_by(Subject.name)
+        )
+        row = await session.execute(stmt)
+        return row.all()

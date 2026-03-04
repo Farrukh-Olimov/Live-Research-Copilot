@@ -15,6 +15,6 @@ def auto_import_datasource_schemas():
         module_init = os.path.join(module_init, "__init__.py")
         if module_name not in imported and os.path.exists(module_init):
             # if module_name.endswith("schema"):
-            logger.info(f"Importing {module_name}")
+            logger.debug(f"Importing {module_name}")
             importlib.import_module(module_name)
             imported.add(module_name)

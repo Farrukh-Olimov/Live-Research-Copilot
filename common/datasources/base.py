@@ -25,13 +25,13 @@ from common.datasources.schema import (
 PaperSchemaType = TypeVar("PaperSchemaType", bound=BasePaperSchema)
 
 
-class CategoryFetcher(ABC):
+class SubjectsFetcher(ABC):
     TIMEOUT: int = 30
 
     DATASOURCE_NAME: ClassVar[str]
 
     def __init__(self, client: AsyncClient, datasource_uuid: UUID):
-        """Initialize the category fetcher.
+        """Initialize the subjects fetcher.
 
         Args:
             client: The httpx client to use for fetching categories.

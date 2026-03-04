@@ -21,11 +21,10 @@ services:
       context: .
       dockerfile: Dockerfile.airflow
     image: airflow-custom:3.1.3
-    user: "0:0"
+    user: "50000:0"
     volumes: 
       - ${AIRFLOW_PROJ_DIR:-.}/.docker.env:/opt/airflow/.env
       - ${AIRFLOW_PROJ_DIR:-.}/airflow_app/dags:/opt/airflow/dags:z
-      - ${AIRFLOW_PROJ_DIR:-.}/airflow_app/logs:/opt/airflow/logs:z
       - ${AIRFLOW_PROJ_DIR:-.}/airflow_app/config:/opt/airflow/config:z
       - ${AIRFLOW_PROJ_DIR:-.}/airflow_app/plugins:/opt/airflow/plugins:z
       - ${AIRFLOW_PROJ_DIR:-.}/common:/opt/airflow/common:z

@@ -1,10 +1,11 @@
 import logging
+import sys
 from threading import Lock
 from typing import ClassVar
 
 from common.constants import LOG_DIR
 
-from .constants import LogLevel
+from .constants import LOG_MODULES, LogLevel
 from .filters import RateLimitFilter, SensitiveDataFilter
 from .formatter import ConsoleFormatter, StructuredFormatter
 from .rotation import (
@@ -18,13 +19,14 @@ from .rotation.base import BaseRotationConfig
 class LoggerManager:
     """Centralized logger configuration manager."""
 
+    _log_module: ClassVar[LOG_MODULES] = LOG_MODULES.APP
     _configured: ClassVar[bool] = False
     _lock: ClassVar[Lock] = Lock()
 
     @classmethod
     def configure(
         cls,
-        level: LogLevel | str = LogLevel.INFO,
+        level: LogLevel = LogLevel.INFO,
         rotation_type: RotationType = RotationType.TIME,
         rotation_config: BaseRotationConfig | None = None,
         log_to_console: bool = True,
@@ -47,19 +49,18 @@ class LoggerManager:
             sanitize_sensitive: Filter sensitive data
             rate_limit: Enable rate limiting to prevent flooding
         """
+        # get root logger
+        root_logger = logging.getLogger()
         if cls._configured:
-            logging.info("Logger already configured, skipping reconfiguration")
+            root_logger.info("Logger already configured, skipping reconfiguration")
             return
         if not cls._configured:
             with cls._lock:
                 if cls._configured:
                     logging.info("Logger already configured, skipping reconfiguration")
                     return
-                # get root logger
-                root_logger = logging.getLogger()
-                root_logger.setLevel(
-                    getattr(logging, level if isinstance(level, str) else level.value)
-                )
+
+                root_logger.setLevel(LogLevel.DEBUG)
 
                 # remove existing handlers
                 root_logger.handlers.clear()
@@ -75,30 +76,30 @@ class LoggerManager:
 
                 # Console Handlers
                 if log_to_console:
-                    console_hander = logging.StreamHandler()
-                    console_hander.setLevel(logging.DEBUG)
+                    console_hander = logging.StreamHandler(sys.stdout)
+                    console_hander.setLevel(level)
                     console_hander.setFormatter(
                         console_fmt if not structured_format else formatter
                     )
                     root_logger.addHandler(console_hander)
 
+                # Create rotation config if not provided
+                if rotation_config is None:
+                    if rotation_type == RotationType.SIZE:
+                        rotation_config = SizeRotationConfig()
+                    else:
+                        rotation_config = TimeRotationConfig()
+
                 # File Handlers
                 if log_to_file:
-                    # Create rotation config if not provided
-                    if rotation_config is None:
-                        if rotation_type == RotationType.SIZE:
-                            rotation_config = SizeRotationConfig()
-                        else:
-                            rotation_config = TimeRotationConfig()
-
-                # All logs file
-                all_logs_path = LOG_DIR.joinpath("app.log")
-                all_handler = rotation_config.create_handler(all_logs_path)
-                all_handler.setLevel(logging.DEBUG)
-                all_handler.setFormatter(
-                    file_fmt if not structured_format else formatter
-                )
-                root_logger.addHandler(all_handler)
+                    # All logs file
+                    all_logs_path = LOG_DIR.joinpath("app.log")
+                    all_handler = rotation_config.create_handler(all_logs_path)
+                    all_handler.setLevel(logging.DEBUG)
+                    all_handler.setFormatter(
+                        file_fmt if not structured_format else formatter
+                    )
+                    root_logger.addHandler(all_handler)
 
                 # Error logs file
                 error_logs_path = LOG_DIR.joinpath("error.log")
@@ -120,7 +121,7 @@ class LoggerManager:
                         handler.addFilter(rate_filter)
 
                 cls._configured = True
-                logging.info("Logging system configured successfully")
+                root_logger.info("Logging system configured successfully")
 
     @classmethod
     def get_logger(cls, name: str | None = None) -> logging.Logger:
@@ -132,10 +133,16 @@ class LoggerManager:
         Returns:
             Configured logger instance
         """
-        if not cls._configured:
-            cls.configure()
+        if cls._log_module == LOG_MODULES.AIRFLOW:
+            from airflow.utils.log.logging_mixin import LoggingMixin
 
-        return logging.getLogger(name)
+            return LoggingMixin().log
+
+        elif cls._log_module == LOG_MODULES.APP:
+            if not cls._configured:
+                cls.configure()
+
+            return logging.getLogger(name)
 
     @classmethod
     def reset(cls) -> None:
@@ -150,7 +157,7 @@ if __name__ == "__main__":
 
     # Configure logger (do this once at application startup)
     LoggerManager.configure(
-        level=LogLevel.DEBUG,
+        level=LogLevel.CRITICAL,
         rotation_type=RotationType.TIME,
         console_colors=True,
         structured_format=False,

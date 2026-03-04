@@ -1,6 +1,7 @@
 from typing import List, Optional
 
 from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from common.database.postgres.models import Author
@@ -17,6 +18,24 @@ class AuthorRespotitory(BaseRepository[Author]):
         Calls the parent's __init__ with Author as the model.
         """
         super().__init__(Author)
+
+    async def create(self, model: Author, session: AsyncSession) -> Author:
+        """Creates a model."""
+        stmt = (
+            insert(Author)
+            .values(name=model.name)
+            .on_conflict_do_nothing(index_elements=["name"])
+            .returning(Author)
+        )
+        result = await session.execute(stmt)
+        row = result.scalar_one_or_none()
+        if row is None:
+            result = await session.execute(
+                select(Author).where(Author.name == model.name)
+            )
+            row = result.scalar_one()
+
+        return row
 
     async def get_by_name(self, name: str, session: AsyncSession) -> Optional[Author]:
         """Returns the Author with the given name.

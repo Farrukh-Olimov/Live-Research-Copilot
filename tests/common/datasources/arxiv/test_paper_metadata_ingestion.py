@@ -12,7 +12,9 @@ async def test_arxiv_paper_metadata_ingestion(httpx_async_client):
     arxiv_ingestion = ArxivPaperMetadataIngestion(client=httpx_async_client)
     papers = []
     async for paper in arxiv_ingestion.run(
-        subject="cs", from_date=datetime(2022, 1, 1), until_date=datetime(2022, 1, 1)
+        subject_code="cs",
+        from_date=datetime(2022, 1, 1),
+        until_date=datetime(2022, 1, 1),
     ):
         assert isinstance(
             paper, PaperMetadataRecord

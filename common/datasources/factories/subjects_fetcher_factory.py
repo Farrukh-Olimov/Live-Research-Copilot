@@ -4,23 +4,23 @@ from uuid import UUID
 from httpx import AsyncClient
 
 from common.constants import DataSource
-from common.datasources.arxiv import ArxivCategoryFetcher
+from common.datasources.arxiv import ArxivSubjectsFetcher
 
 
-class CategoryFetcherFactory:
+class SubjectsFetcherFactory:
     @overload
     @staticmethod
-    def create(
+    def get(
         datasource_type: DataSource.ARXIV,
         datasource_uuid: UUID,
         http_client: AsyncClient,
-    ) -> ArxivCategoryFetcher: ...
+    ) -> ArxivSubjectsFetcher: ...
 
     @staticmethod
-    def create(
+    def get(
         datasource_type: DataSource, datasource_uuid: UUID, http_client: AsyncClient
     ):
-        """Creates a category fetcher object based on the ingestion type.
+        """Creates a subjects fetcher object based on the ingestion type.
 
         Args:
             datasource_type (DataSource): The ingestion to create base on datasource.
@@ -28,13 +28,13 @@ class CategoryFetcherFactory:
             http_client (AsyncClient): The httpx client to use for fetching categories.
 
         Returns:
-            CategoryFetcher: The category fetcher object.
+            SubjectsFetcher: The category fetcher object.
 
         Raises:
             KeyError: If the datasource_type type is unknown.
         """
         match datasource_type:
             case DataSource.ARXIV:
-                return ArxivCategoryFetcher(http_client, datasource_uuid)
+                return ArxivSubjectsFetcher(http_client, datasource_uuid)
             case _:
                 raise KeyError(f"Unknown datasource type: {datasource_type}")
