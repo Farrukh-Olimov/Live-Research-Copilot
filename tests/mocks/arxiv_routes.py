@@ -62,21 +62,18 @@ def lazy_arxiv_router():
                 text=load_response(DATA_DIR.joinpath("category.txt").as_posix()),
             )
 
-        param = dict_to_url_params(ArxivPaperMetadataFetcher.PARAMS)
-        if param in request_params and "resumptionToken" not in request_params:
+        if (
+            ArxivPaperMetadataFetcher.BASE_URL in str(request.url)
+            and request.url.params.get("start") == "0"
+        ):
             return httpx.Response(
                 200,
                 text=load_response(
                     DATA_DIR.joinpath("arxiv_paper_metadata_page_1.xml").as_posix()
                 ),
             )
-        elif param in request_params and "resumptionToken" in request_params:
-            return httpx.Response(
-                200,
-                text=load_response(
-                    DATA_DIR.joinpath("arxiv_paper_metadata_page_2.xml").as_posix()
-                ),
-            )
+        elif ArxivPaperMetadataFetcher.BASE_URL in str(request.url):
+            return httpx.Response(200, text="")
 
         raise NotImplementedError(
             f"Mocking {request.method} {request.url} not implemented"

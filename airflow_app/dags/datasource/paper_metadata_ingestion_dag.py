@@ -21,7 +21,7 @@ logger = LoggerManager.get_logger(__name__)
     catchup=False,
     schedule="@daily",
     tags=["paper_metadata_ingestion"],
-    max_active_tasks=16,
+    max_active_tasks=6,
     max_active_runs=1,
 )
 def paper_metadata_ingestion_dag():

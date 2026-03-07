@@ -1,67 +1,327 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<OAI-PMH
-	xmlns="http://www.openarchives.org/OAI/2.0/"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
-	<responseDate>2026-01-16T13:41:59Z</responseDate>
-	<request verb="ListRecords" metadataPrefix="oai_dc" from="2024-12-16" until="2025-12-01" set="cs:cs:AI">http://oaipmh.arxiv.org/oai</request>
-	<ListRecords>
-		<record>
-			<header>
-				<identifier>oai:arXiv.org:2411.17309</identifier>
-				<datestamp>2024-12-01</datestamp>
-				<setSpec>cs:cs:AR</setSpec>
-				<setSpec>cs:cs:AI</setSpec>
-				<setSpec>cs:cs:DC</setSpec>
-				<setSpec>cs:cs:ET</setSpec>
-			</header>
-			<metadata>
-				<oai_dc:dc
-					xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/"
-					xmlns:dc="http://purl.org/dc/elements/1.1/"
-					xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ https://www.openarchives.org/OAI/2.0/oai_dc.xsd">
-					<dc:title>PIM-AI: A Novel Architecture for High-Efficiency LLM Inference</dc:title>
-					<dc:creator>Ortega, Cristobal</dc:creator>
-					<dc:creator>Falevoz, Yann</dc:creator>
-					<dc:creator>Ayrignac, Renaud</dc:creator>
-					<dc:subject>Hardware Architecture</dc:subject>
-					<dc:subject>Artificial Intelligence</dc:subject>
-					<dc:subject>Distributed, Parallel, and Cluster Computing</dc:subject>
-					<dc:subject>Emerging Technologies</dc:subject>
-					<dc:description>Large Language Models (LLMs) have become essential in a variety of applications due to their advanced language understanding and generation capabilities. However, their computational and memory requirements pose significant challenges to traditional hardware architectures. Processing-in-Memory (PIM), which integrates computational units directly into memory chips, offers several advantages for LLM inference, including reduced data transfer bottlenecks and improved power efficiency.
-  This paper introduces PIM-AI, a novel DDR5/LPDDR5 PIM architecture designed for LLM inference without modifying the memory controller or DDR/LPDDR memory PHY. We have developed a simulator to evaluate the performance of PIM-AI in various scenarios and demonstrate its significant advantages over conventional architectures. In cloud-based scenarios, PIM-AI reduces the 3-year TCO per queries-per-second by up to 6.94x compared to state-of-the-art GPUs, depending on the LLM model used. In mobile scenarios, PIM-AI achieves a 10- to 20-fold reduction in energy per token compared to state-of-the-art mobile SoCs, resulting in 25 to 45~\% more queries per second and 6.9x to 13.4x less energy per query, extending battery life and enabling more inferences per charge. These results highlight PIM-AI&#39;s potential to revolutionize LLM deployments, making them more efficient, scalable, and sustainable. </dc:description>
-					<dc:description>14 pages, 5 figures</dc:description>
-					<dc:date>2024-11-26</dc:date>
-					<dc:type>text</dc:type>
-					<dc:identifier>http://arxiv.org/abs/2411.17309</dc:identifier>
-				</oai_dc:dc>
-			</metadata>
-		</record>
-		<record>
-			<header>
-				<identifier>oai:arXiv.org:2105.02653</identifier>
-				<datestamp>2024-12-02</datestamp>
-				<setSpec>cs:cs:LG</setSpec>
-				<setSpec>cs:cs:AI</setSpec>
-			</header>
-			<metadata>
-				<oai_dc:dc
-					xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/"
-					xmlns:dc="http://purl.org/dc/elements/1.1/"
-					xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ https://www.openarchives.org/OAI/2.0/oai_dc.xsd">
-					<dc:title>Regularizing Explanations in Bayesian Convolutional Neural Networks</dc:title>
-					<dc:creator>Bekkemoen, Yanzhe</dc:creator>
-					<dc:creator>Langseth, Helge</dc:creator>
-					<dc:subject>Machine Learning</dc:subject>
-					<dc:subject>Artificial Intelligence</dc:subject>
-					<dc:description>Neural networks are powerful function approximators with tremendous potential in learning complex distributions. However, they are prone to overfitting on spurious patterns. Bayesian inference provides a principled way to regularize neural networks and give well-calibrated uncertainty estimates. It allows us to specify prior knowledge on weights. However, specifying domain knowledge via distributions over weights is infeasible. Furthermore, it is unable to correct models when they focus on spurious or irrelevant features. New methods within explainable artificial intelligence allow us to regularize explanations in the form of feature importance to add domain knowledge and correct the models&#39; focus. Nevertheless, they are incompatible with Bayesian neural networks, as they require us to modify the loss function. We propose a new explanation regularization method that is compatible with Bayesian inference. Consequently, we can quantify uncertainty and, at the same time, have correct explanations. We test our method using four different datasets. The results show that our method improves predictive performance when models overfit on spurious features or are uncertain of which features to focus on. Moreover, our method performs better than augmenting training data with samples where spurious features are removed through masking. We provide code, data, trained weights, and hyperparameters. </dc:description>
-					<dc:date>2021-04-29</dc:date>
-					<dc:date>2024-11-27</dc:date>
-					<dc:type>text</dc:type>
-					<dc:identifier>http://arxiv.org/abs/2105.02653</dc:identifier>
-				</oai_dc:dc>
-			</metadata>
-		</record>
-		<resumptionToken expirationDate='2026-01-17T00:00:00Z'>verb%3DListRecords%26metadataPrefix%3Doai_dc%26from%3D2024-12-16%26until%3D2025-12-01%26set%3Dcs%253Acs%253AAI%26skip%3D16</resumptionToken>
-	</ListRecords>
-</OAI-PMH>
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns="http://www.w3.org/2005/Atom">
+  <id>https://arxiv.org/api/3xu4sCzi8OTM4cllckoPPWcOqxg</id>
+  <title>arXiv Query: search_query=cat:cs.AI AND submittedDate:"202601010600 TO 202607010600"&amp;id_list=&amp;start=25&amp;max_results=10</title>
+  <updated>2026-03-07T01:48:45Z</updated>
+  <link href="https://arxiv.org/api/query?search_query=cat:cs.AI+AND+submittedDate:%22202601010600+TO+202607010600%22&amp;start=25&amp;max_results=10&amp;id_list=" type="application/atom+xml"/>
+  <opensearch:itemsPerPage>10</opensearch:itemsPerPage>
+  <opensearch:totalResults>9068</opensearch:totalResults>
+  <opensearch:startIndex>25</opensearch:startIndex>
+  <entry>
+    <id>http://arxiv.org/abs/2601.09609v1</id>
+    <title>DPWriter: Reinforcement Learning with Diverse Planning Branching for Creative Writing</title>
+    <updated>2026-01-14T16:30:20Z</updated>
+    <link href="https://arxiv.org/abs/2601.09609v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2601.09609v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Reinforcement learning (RL)-based enhancement of large language models (LLMs) often leads to reduced output diversity, undermining their utility in open-ended tasks like creative writing. Current methods lack explicit mechanisms for guiding diverse exploration and instead prioritize optimization efficiency and performance over diversity. This paper proposes an RL framework structured around a semi-structured long Chain-of-Thought (CoT), in which the generation process is decomposed into explicitly planned intermediate steps. We introduce a Diverse Planning Branching method that strategically introduces divergence at the planning phase based on diversity variation, alongside a group-aware diversity reward to encourage distinct trajectories. Experimental results on creative writing benchmarks demonstrate that our approach significantly improves output diversity without compromising generation quality, consistently outperforming existing baselines.</summary>
+    <category term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-01-14T16:30:20Z</published>
+    <arxiv:primary_category term="cs.CL"/>
+    <author>
+      <name>Qian Cao</name>
+    </author>
+    <author>
+      <name>Yahui Liu</name>
+    </author>
+    <author>
+      <name>Wei Bi</name>
+    </author>
+    <author>
+      <name>Yi Zhao</name>
+    </author>
+    <author>
+      <name>Ruihua Song</name>
+    </author>
+    <author>
+      <name>Xiting Wang</name>
+    </author>
+    <author>
+      <name>Ruiming Tang</name>
+    </author>
+    <author>
+      <name>Guorui Zhou</name>
+    </author>
+    <author>
+      <name>Han Li</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2601.09413v1</id>
+    <title>Speech-Hands: A Self-Reflection Voice Agentic Approach to Speech Recognition and Audio Reasoning with Omni Perception</title>
+    <updated>2026-01-14T12:06:50Z</updated>
+    <link href="https://arxiv.org/abs/2601.09413v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2601.09413v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>We introduce a voice-agentic framework that learns one critical omni-understanding skill: knowing when to trust itself versus when to consult external audio perception. Our work is motivated by a crucial yet counterintuitive finding: naively fine-tuning an omni-model on both speech recognition and external sound understanding tasks often degrades performance, as the model can be easily misled by noisy hypotheses. To address this, our framework, Speech-Hands, recasts the problem as an explicit self-reflection decision. This learnable reflection primitive proves effective in preventing the model from being derailed by flawed external candidates. We show that this agentic action mechanism generalizes naturally from speech recognition to complex, multiple-choice audio reasoning. Across the OpenASR leaderboard, Speech-Hands consistently outperforms strong baselines by 12.1% WER on seven benchmarks. The model also achieves 77.37% accuracy and high F1 on audio QA decisions, showing robust generalization and reliability across diverse audio question answering datasets. By unifying perception and decision-making, our work offers a practical path toward more reliable and resilient audio intelligence.</summary>
+    <category term="cs.SD" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.MA" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="eess.AS" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-01-14T12:06:50Z</published>
+    <arxiv:comment>Preprint. The version was submitted in October 2025</arxiv:comment>
+    <arxiv:primary_category term="cs.SD"/>
+    <author>
+      <name>Zhen Wan</name>
+    </author>
+    <author>
+      <name>Chao-Han Huck Yang</name>
+    </author>
+    <author>
+      <name>Jinchuan Tian</name>
+    </author>
+    <author>
+      <name>Hanrong Ye</name>
+    </author>
+    <author>
+      <name>Ankita Pasad</name>
+    </author>
+    <author>
+      <name>Szu-wei Fu</name>
+    </author>
+    <author>
+      <name>Arushi Goel</name>
+    </author>
+    <author>
+      <name>Ryo Hachiuma</name>
+    </author>
+    <author>
+      <name>Shizhe Diao</name>
+    </author>
+    <author>
+      <name>Kunal Dhawan</name>
+    </author>
+    <author>
+      <name>Sreyan Ghosh</name>
+    </author>
+    <author>
+      <name>Yusuke Hirota</name>
+    </author>
+    <author>
+      <name>Zhehuai Chen</name>
+    </author>
+    <author>
+      <name>Rafael Valle</name>
+    </author>
+    <author>
+      <name>Ehsan Hosseini Asl</name>
+    </author>
+    <author>
+      <name>Chenhui Chu</name>
+    </author>
+    <author>
+      <name>Shinji Watanabe</name>
+    </author>
+    <author>
+      <name>Yu-Chiang Frank Wang</name>
+    </author>
+    <author>
+      <name>Boris Ginsburg</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2601.09353v1</id>
+    <title>Monte-Carlo Tree Search with Neural Network Guidance for Lane-Free Autonomous Driving</title>
+    <updated>2026-01-14T10:35:21Z</updated>
+    <link href="https://arxiv.org/abs/2601.09353v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2601.09353v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Lane-free traffic environments allow vehicles to better harness the lateral capacity of the road without being restricted to lane-keeping, thereby increasing the traffic flow rates. As such, we have a distinct and more challenging setting for autonomous driving. In this work, we consider a Monte-Carlo Tree Search (MCTS) planning approach for single-agent autonomous driving in lane-free traffic, where the associated Markov Decision Process we formulate is influenced from existing approaches tied to reinforcement learning frameworks. In addition, MCTS is equipped with a pre-trained neural network (NN) that guides the selection phase. This procedure incorporates the predictive capabilities of NNs for a more informed tree search process under computational constraints. In our experimental evaluation, we consider metrics that address both safety (through collision rates) and efficacy (through measured speed). Then, we examine: (a) the influence of isotropic state information for vehicles in a lane-free environment, resulting in nudging behaviour--vehicles' policy reacts due to the presence of faster tailing ones, (b) the acceleration of performance for the NN-guided variant of MCTS, and (c) the trade-off between computational resources and solution quality.</summary>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-01-14T10:35:21Z</published>
+    <arxiv:primary_category term="cs.AI"/>
+    <author>
+      <name>Ioannis Peridis</name>
+    </author>
+    <author>
+      <name>Dimitrios Troullinos</name>
+    </author>
+    <author>
+      <name>Georgios Chalkiadakis</name>
+    </author>
+    <author>
+      <name>Pantelis Giankoulidis</name>
+    </author>
+    <author>
+      <name>Ioannis Papamichail</name>
+    </author>
+    <author>
+      <name>Markos Papageorgiou</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2601.09351v1</id>
+    <title>Navigating Ethical AI Challenges in the Industrial Sector: Balancing Innovation and Responsibility</title>
+    <updated>2026-01-14T10:32:21Z</updated>
+    <link href="https://arxiv.org/abs/2601.09351v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2601.09351v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>The integration of artificial intelligence (AI) into the industrial sector has not only driven innovation but also expanded the ethical landscape, necessitating a reevaluation of principles governing technology and its applications and awareness in research and development of industrial AI solutions. This chapter explores how AI-empowered industrial innovation inherently intersects with ethics, as advancements in AI introduce new challenges related to transparency, accountability, and fairness. In the chapter, we then examine the ethical aspects of several examples of AI manifestation in industrial use cases and associated factors such as ethical practices in the research and development process and data sharing. With the progress of ethical industrial AI solutions, we emphasize the importance of embedding ethical principles into industrial AI systems and its potential to inspire technological breakthroughs and foster trust among stakeholders. This chapter also offers actionable insights to guide industrial research and development toward a future where AI serves as an enabler for ethical and responsible industrial progress as well as a more inclusive industrial ecosystem.</summary>
+    <category term="cs.CY" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-01-14T10:32:21Z</published>
+    <arxiv:primary_category term="cs.CY"/>
+    <author>
+      <name>Ruomu Tan</name>
+    </author>
+    <author>
+      <name>Martin W Hoffmann</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2601.09306v1</id>
+    <title>On-Device Large Language Models for Sequential Recommendation</title>
+    <updated>2026-01-14T09:22:08Z</updated>
+    <link href="https://arxiv.org/abs/2601.09306v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2601.09306v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>On-device recommendation is critical for a number of real-world applications, especially in scenarios that have agreements on execution latency, user privacy, and robust functionality when internet connectivity is unstable or even impossible. While large language models (LLMs) can now provide exceptional capabilities that model user behavior for sequential recommendation tasks, their substantial memory footprint and computational overhead make the deployment on resource-constrained devices a high risk proposition. In this paper, we propose OD-LLM, the first task-adaptive compression framework explicitly designed to provide efficient and accurate on-device deployment of LLMs for sequential recommendation tasks. OD-LLM uniquely integrates two complementary compression strategies: a low-rank structural compression algorithm which uses Singular Value Decomposition (SVD) to significantly reduce parameter redundancy in the model, and a novel tokenization normalization technique that better complements the low-rank decomposition process being used. Additionally, to minimize any potential performance degradation when using higher compression ratios, a novel progressive alignment algorithm is used to iteratively refine the parameters required layerwise in the target model. Empirical evaluations conducted on sequential recommendation benchmarks show that OD-LLM exhibits no loss in effectiveness when compared to the original recommendation model, when the deployed model size is halved. These promising results demonstrate the efficacy and scalability of OD-LLM, making this novel solution a practical alternative for real-time, on-device solutions wishing to replace expensive, remotely executed LLMs.</summary>
+    <category term="cs.IR" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-01-14T09:22:08Z</published>
+    <arxiv:comment>WSDM'26</arxiv:comment>
+    <arxiv:primary_category term="cs.IR"/>
+    <author>
+      <name>Xin Xia</name>
+    </author>
+    <author>
+      <name>Hongzhi Yin</name>
+    </author>
+    <author>
+      <name>Shane Culpepper</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2601.09292v1</id>
+    <title>Blue Teaming Function-Calling Agents</title>
+    <updated>2026-01-14T08:53:16Z</updated>
+    <link href="https://arxiv.org/abs/2601.09292v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2601.09292v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>We present an experimental evaluation that assesses the robustness of four open source LLMs claiming function-calling capabilities against three different attacks, and we measure the effectiveness of eight different defences. Our results show how these models are not safe by default, and how the defences are not yet employable in real-world scenarios.</summary>
+    <category term="cs.CR" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-01-14T08:53:16Z</published>
+    <arxiv:comment>This work has been accepted to appear at the AAAI 2026 Workshop on Trust and Control in Agentic AI (TrustAgent)</arxiv:comment>
+    <arxiv:primary_category term="cs.CR"/>
+    <author>
+      <name>Greta Dolcetti</name>
+    </author>
+    <author>
+      <name>Giulio Zizzo</name>
+    </author>
+    <author>
+      <name>Sergio Maffeis</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2601.09274v1</id>
+    <title>$A^3$-Bench: Benchmarking Memory-Driven Scientific Reasoning via Anchor and Attractor Activation</title>
+    <updated>2026-01-14T08:17:41Z</updated>
+    <link href="https://arxiv.org/abs/2601.09274v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2601.09274v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Scientific reasoning relies not only on logical inference but also on activating prior knowledge and experiential structures. Memory can efficiently reuse knowledge and enhance reasoning consistency and stability. However, existing benchmarks mainly evaluate final answers or step-by-step coherence, overlooking the \textit{memory-driven} mechanisms that underlie human reasoning, which involves activating anchors and attractors, then integrating them into multi-step inference. To address this gap, we propose $A^3$-Bench~ https://a3-bench.github.io, a benchmark designed to evaluate scientific reasoning through dual-scale memory-driven activation, grounded in Anchor and Attractor Activation. First, we annotate 2,198 science reasoning problems across domains using the SAPM process(subject, anchor &amp; attractor, problem, and memory developing). Second, we introduce a dual-scale memory evaluation framework utilizing anchors and attractors, along with the AAUI(Anchor--Attractor Utilization Index) metric to measure memory activation rates. Finally, through experiments with various base models and paradigms, we validate $A^3$-Bench and analyze how memory activation impacts reasoning performance, providing insights into memory-driven scientific reasoning.</summary>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-01-14T08:17:41Z</published>
+    <arxiv:primary_category term="cs.AI"/>
+    <author>
+      <name>Jian Zhang</name>
+    </author>
+    <author>
+      <name>Yu He</name>
+    </author>
+    <author>
+      <name>Zhiyuan Wang</name>
+    </author>
+    <author>
+      <name>Zhangqi Wang</name>
+    </author>
+    <author>
+      <name>Kai He</name>
+    </author>
+    <author>
+      <name>Fangzhi Xu</name>
+    </author>
+    <author>
+      <name>Qika Lin</name>
+    </author>
+    <author>
+      <name>Jun Liu</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2601.09259v1</id>
+    <title>MAXS: Meta-Adaptive Exploration with LLM Agents</title>
+    <updated>2026-01-14T07:48:00Z</updated>
+    <link href="https://arxiv.org/abs/2601.09259v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2601.09259v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Large Language Model (LLM) Agents exhibit inherent reasoning abilities through the collaboration of multiple tools. However, during agent inference, existing methods often suffer from (i) locally myopic generation, due to the absence of lookahead, and (ii) trajectory instability, where minor early errors can escalate into divergent reasoning paths. These issues make it difficult to balance global effectiveness and computational efficiency. To address these two issues, we propose meta-adaptive exploration with LLM agents https://github.com/exoskeletonzj/MAXS, a meta-adaptive reasoning framework based on LLM Agents that flexibly integrates tool execution and reasoning planning. MAXS employs a lookahead strategy to extend reasoning paths a few steps ahead, estimating the advantage value of tool usage, and combines step consistency variance and inter-step trend slopes to jointly select stable, consistent, and high-value reasoning steps. Additionally, we introduce a trajectory convergence mechanism that controls computational cost by halting further rollouts once path consistency is achieved, enabling a balance between resource efficiency and global effectiveness in multi-tool reasoning. We conduct extensive empirical studies across three base models (MiMo-VL-7B, Qwen2.5-VL-7B, Qwen2.5-VL-32B) and five datasets, demonstrating that MAXS consistently outperforms existing methods in both performance and inference efficiency. Further analysis confirms the effectiveness of our lookahead strategy and tool usage.</summary>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-01-14T07:48:00Z</published>
+    <arxiv:primary_category term="cs.AI"/>
+    <author>
+      <name>Jian Zhang</name>
+    </author>
+    <author>
+      <name>Zhiyuan Wang</name>
+    </author>
+    <author>
+      <name>Zhangqi Wang</name>
+    </author>
+    <author>
+      <name>Yu He</name>
+    </author>
+    <author>
+      <name>Haoran Luo</name>
+    </author>
+    <author>
+      <name>li yuan</name>
+    </author>
+    <author>
+      <name>Lingling Zhang</name>
+    </author>
+    <author>
+      <name>Rui Mao</name>
+    </author>
+    <author>
+      <name>Qika Lin</name>
+    </author>
+    <author>
+      <name>Jun Liu</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2601.08871v1</id>
+    <title>Semantic visually-guided acoustic highlighting with large vision-language models</title>
+    <updated>2026-01-12T01:30:15Z</updated>
+    <link href="https://arxiv.org/abs/2601.08871v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2601.08871v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Balancing dialogue, music, and sound effects with accompanying video is crucial for immersive storytelling, yet current audio mixing workflows remain largely manual and labor-intensive. While recent advancements have introduced the visually guided acoustic highlighting task, which implicitly rebalances audio sources using multimodal guidance, it remains unclear which visual aspects are most effective as conditioning signals.We address this gap through a systematic study of whether deep video understanding improves audio remixing. Using textual descriptions as a proxy for visual analysis, we prompt large vision-language models to extract six types of visual-semantic aspects, including object and character appearance, emotion, camera focus, tone, scene background, and inferred sound-related cues. Through extensive experiments, camera focus, tone, and scene background consistently yield the largest improvements in perceptual mix quality over state-of-the-art baselines. Our findings (i) identify which visual-semantic cues most strongly support coherent and visually aligned audio remixing, and (ii) outline a practical path toward automating cinema-grade sound design using lightweight guidance derived from large vision-language models.</summary>
+    <category term="cs.SD" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="eess.AS" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-01-12T01:30:15Z</published>
+    <arxiv:primary_category term="cs.SD"/>
+    <author>
+      <name>Junhua Huang</name>
+    </author>
+    <author>
+      <name>Chao Huang</name>
+    </author>
+    <author>
+      <name>Chenliang Xu</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2601.08869v1</id>
+    <title>AI Deployment Authorisation: A Global Standard for Machine-Readable Governance of High-Risk Artificial Intelligence</title>
+    <updated>2026-01-11T18:14:20Z</updated>
+    <link href="https://arxiv.org/abs/2601.08869v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2601.08869v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Modern artificial intelligence governance lacks a formal, enforceable mechanism for determining whether a given AI system is legally permitted to operate in a specific domain and jurisdiction. Existing tools such as model cards, audits, and benchmark evaluations provide descriptive information about model behavior and training data but do not produce binding deployment decisions with legal or financial force. This paper introduces the AI Deployment Authorisation Score (ADAS), a machine-readable regulatory framework that evaluates AI systems across five legally and economically grounded dimensions: risk, alignment, externality, control, and auditability. ADAS produces a cryptographically verifiable deployment certificate that regulators, insurers, and infrastructure operators can consume as a license to operate, using public-key verification and transparency mechanisms adapted from secure software supply chain and certificate transparency systems. The paper presents the formal specification, decision logic, evidence model, and policy architecture of ADAS and demonstrates how it operationalizes the European Union Artificial Intelligence Act, United States critical infrastructure governance, and insurance underwriting requirements by compiling statutory and regulatory obligations into machine-executable deployment gates. We argue that deployment-level authorization, rather than model-level evaluation, constitutes the missing institutional layer required for safe, lawful, and economically scalable artificial intelligence.</summary>
+    <category term="cs.CY" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-01-11T18:14:20Z</published>
+    <arxiv:comment>28 pages, 4 figures. Preprint</arxiv:comment>
+    <arxiv:primary_category term="cs.CY"/>
+    <author>
+      <name>Daniel Djan Saparning</name>
+    </author>
+  </entry>
+</feed>

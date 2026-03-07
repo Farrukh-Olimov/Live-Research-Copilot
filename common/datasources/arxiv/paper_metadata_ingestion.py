@@ -29,11 +29,16 @@ class ArxivPaperMetadataIngestion(PaperMetadataIngestion[ArxivPaperMetadataRecor
         super().__init__(fetcher, normalizer)
 
     async def run(
-        self, subject_code: str, from_date: datetime, until_date: datetime
+        self,
+        domain_code: str,
+        subject_code: str,
+        from_date: datetime,
+        until_date: datetime,
     ) -> AsyncIterator[PaperMetadataRecord]:
         """Runs the paper metadata ingestion for a given subject and date range.
 
         Args:
+            domain_code (str): The domain code to ingest.
             subject_code (str): The subject code to ingest.
             from_date (datetime): The from date to ingest.
             until_date (datetime): The until date to ingest.
@@ -45,6 +50,7 @@ class ArxivPaperMetadataIngestion(PaperMetadataIngestion[ArxivPaperMetadataRecor
         logger.debug(
             "Start ingesting paper metadata",
             extra={
+                "domain_code": domain_code,
                 "subject_code": subject_code,
                 "from_date": from_date,
                 "until_date": until_date,
@@ -52,7 +58,7 @@ class ArxivPaperMetadataIngestion(PaperMetadataIngestion[ArxivPaperMetadataRecor
         )
 
         async for paper in self._fetcher.fetch_paper_metadata(
-            subject_code, from_date, until_date
+            domain_code, subject_code, from_date, until_date
         ):
             normalized_paper_metadata = self._normalizer.normalize(paper)
             yield normalized_paper_metadata
@@ -60,6 +66,7 @@ class ArxivPaperMetadataIngestion(PaperMetadataIngestion[ArxivPaperMetadataRecor
         logger.debug(
             "Finished ingesting paper metadata",
             extra={
+                "domain_code": domain_code,
                 "subject_code": subject_code,
                 "from_date": from_date,
                 "until_date": until_date,

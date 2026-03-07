@@ -2,7 +2,7 @@ from typing import Optional
 from uuid import UUID
 
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from common.constants.datasource import DataSource
@@ -23,16 +23,21 @@ class DatasourceRepository(BaseRepository[Datasource]):
 
     async def create(self, model: Datasource, session: AsyncSession) -> Datasource:
         """Creates a model."""
-        # TODO: refactor
-        try:
-            async with session.begin_nested():
-                session.add(model)
-                await session.flush()
-                return model
-        except IntegrityError:
-            query = select(Datasource).where(Datasource.name == model.name)
-            result = await session.execute(query)
-            return result.scalar_one()
+        stmt = (
+            insert(Datasource)
+            .values(name=model.name)
+            .on_conflict_do_nothing(index_elements=["name"])
+            .returning(Datasource)
+        )
+        result = await session.execute(stmt)
+        row = result.scalar_one_or_none()
+        if row is None:
+            result = await session.execute(
+                select(Datasource).where(Datasource.name == model.name)
+            )
+            row = result.scalar_one()
+
+        return row
 
     async def get_uuid_by_name(
         self, datasource_name: DataSource, session: AsyncSession

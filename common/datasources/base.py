@@ -8,7 +8,6 @@ from typing import (
     Dict,
     Generic,
     List,
-    Optional,
     TypeVar,
 )
 from uuid import UUID
@@ -58,30 +57,15 @@ class PaperMetadataParser(Generic[PaperSchemaType], ABC):
     DATASOURCE_NAME: ClassVar[str]
 
     @abstractmethod
-    def parse(
-        self, raw_data: Any, primary_subject_code: str, domain_code: str
-    ) -> List[PaperSchemaType]:
+    def parse(self, raw_data: Any, domain_code: str) -> List[PaperSchemaType]:
         """Parses raw data from the datasource into a PaperSchemaType object.
 
         Args:
             raw_data (Any): The raw data to parse.
-            primary_subject_code (str): The primary subject code of the record.
             domain_code (str): The domain code of the record.
 
         Returns:
             PaperSchemaType: The parsed paper metadata object.
-        """
-        pass
-
-    @abstractmethod
-    def get_resumption_token(self, raw_data: str) -> Optional[str]:
-        """Extracts the resumption token from an arXiv API response XML.
-
-        Args:
-            raw_data (str): The XML text of the arXiv API response.
-
-        Returns:
-            Optional[str]: The resumption token if present, otherwise None.
         """
         pass
 
@@ -104,6 +88,8 @@ class PaperMetadataNormalizer(Generic[PaperSchemaType], ABC):
 
 class PaperMetadataFetcher(Generic[PaperSchemaType], ABC):
     TIMEOUT: int = 30
+    RETRIES: int = 3
+    DELAY: int = 3
 
     DATASOURCE_NAME: ClassVar[str]
 
@@ -121,15 +107,10 @@ class PaperMetadataFetcher(Generic[PaperSchemaType], ABC):
         self._client = client
         self._paper_parser = paper_parser
 
-    @staticmethod
-    @abstractmethod
-    def get_domain_code(subject_code: str) -> str:
-        """Returns the domain code from a subject code."""
-        pass
-
     @abstractmethod
     async def fetch_paper_metadata(
         self,
+        domain_code: str,
         subject_code: str,
         from_date: datetime,
         until_date: datetime,
@@ -137,6 +118,7 @@ class PaperMetadataFetcher(Generic[PaperSchemaType], ABC):
         """Fetches paper metadata from the datasource.
 
         Args:
+            domain_code (str): The domain code to query.
             subject_code (str): The subject code to query.
             from_date (datetime): The from date to query.
             until_date (datetime): The until date to query.
@@ -165,11 +147,12 @@ class PaperMetadataIngestion(Generic[PaperSchemaType], ABC):
 
     @abstractmethod
     async def run(
-        self, subject: str, from_date: datetime, until_date: datetime
+        self, domain_code: str, subject: str, from_date: datetime, until_date: datetime
     ) -> AsyncIterator[PaperMetadataRecord]:
         """Runs the paper metadata ingestion given subject and date range.
 
         Args:
+            domain_code (str): The domain_code to ingest.
             subject (str): The subject to ingest.
             from_date (datetime): The from date to ingest.
             until_date (datetime): The until date to ingest.

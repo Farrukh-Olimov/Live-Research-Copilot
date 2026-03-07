@@ -1,8 +1,8 @@
-from datetime import date
-from typing import ClassVar, List, Optional
+from datetime import date, datetime
+from typing import ClassVar, List
 import xml.etree.ElementTree as ET
 
-from common.datasources.arxiv.const import DATASOURCE_NAME, NAMESPACE
+from common.datasources.arxiv.const import DATASOURCE_NAME, PAPER_NAMESPACE
 from common.datasources.arxiv.schema import ArxivPaperMetadataRecord
 from common.datasources.base import PaperMetadataParser
 from common.utils.logger import LoggerManager
@@ -13,9 +13,7 @@ logger = LoggerManager.get_logger(__name__)
 class ArxivPaperMetadataParser(PaperMetadataParser[ArxivPaperMetadataRecord]):
     DATASOURCE_NAME: ClassVar[str] = DATASOURCE_NAME
 
-    def parse(
-        self, raw_data: str, primary_subject_code: str, domain_code: str
-    ) -> List[ArxivPaperMetadataRecord]:
+    def parse(self, raw_data: str, domain_code: str) -> List[ArxivPaperMetadataRecord]:
         """Parses an arXiv API response XML into a list of paper metadata objects.
 
         Args:
@@ -29,24 +27,15 @@ class ArxivPaperMetadataParser(PaperMetadataParser[ArxivPaperMetadataRecord]):
         root = ET.fromstring(raw_data)
         records: List[ArxivPaperMetadataRecord] = []
 
-        for record_el in root.findall(".//oai:record", NAMESPACE):
+        for record_el in root.findall("atom:entry", PAPER_NAMESPACE):
             try:
-                header = record_el.find("oai:header", NAMESPACE)
-                metadata = record_el.find("oai:metadata", NAMESPACE)
-
-                if header is None or metadata is None:
-                    continue
-
-                arxiv_el = metadata.find("oai_dc:dc", NAMESPACE)
-                if arxiv_el is None:
-                    continue
-
-                abstract = self._get_abstract(arxiv_el)
-                arxiv_id = self._get_arxiv_id(header)
-                authors = self._get_authors(arxiv_el)
-                title = self._get_title(arxiv_el)
-                subject_codes = self._get_subject_codes(header, primary_subject_code)
-                publication_date = self._get_publication_date(arxiv_el)
+                abstract = self._get_abstract(record_el)
+                arxiv_id = self._get_arxiv_id(record_el)
+                authors = self._get_authors(record_el)
+                title = self._get_title(record_el)
+                primary_subject_code = self._get_primary_category(record_el)
+                subject_codes = self._get_subject_codes(record_el, primary_subject_code)
+                publication_date = self._get_publication_date(record_el)
                 records.append(
                     ArxivPaperMetadataRecord(
                         abstract=abstract,
@@ -77,8 +66,8 @@ class ArxivPaperMetadataParser(PaperMetadataParser[ArxivPaperMetadataRecord]):
             List[str]: A list of all subjects extracted from the record header.
         """
         subjects = []
-        for set_el in header.findall("oai:setSpec", NAMESPACE):
-            subject = set_el.text.strip().lower()
+        for set_el in header.findall("atom:category", PAPER_NAMESPACE):
+            subject = set_el.attrib["term"]
             if subject != primary_subject_code:
                 subjects.append(subject)
         return subjects
@@ -92,8 +81,8 @@ class ArxivPaperMetadataParser(PaperMetadataParser[ArxivPaperMetadataRecord]):
         Returns:
             str: The arXiv ID of the record.
         """
-        arxiv_id = header.find("oai:identifier", NAMESPACE).text.strip()
-        arxiv_id = arxiv_id.rsplit(":", 1)[-1]
+        arxiv_id = header.find("atom:id", PAPER_NAMESPACE).text.strip()
+        arxiv_id = arxiv_id.rsplit("/", 1)[-1]
         return arxiv_id
 
     def _get_authors(self, arxiv_el: ET.Element) -> List[str]:
@@ -106,8 +95,9 @@ class ArxivPaperMetadataParser(PaperMetadataParser[ArxivPaperMetadataRecord]):
             List[str]: A list of all authors extracted from the record element.
         """
         authors = []
-        for author in arxiv_el.findall("dc:creator", NAMESPACE):
-            authors.append(author.text.strip())
+        for author in arxiv_el.findall("atom:author", PAPER_NAMESPACE):
+            name = author.find("atom:name", PAPER_NAMESPACE).text
+            authors.append(name.strip())
         return authors
 
     def _get_title(self, arxiv_el: ET.Element) -> str:
@@ -119,7 +109,7 @@ class ArxivPaperMetadataParser(PaperMetadataParser[ArxivPaperMetadataRecord]):
         Returns:
             str: The title of the record.
         """
-        title = arxiv_el.find("dc:title", NAMESPACE).text.strip()
+        title = arxiv_el.find("atom:title", PAPER_NAMESPACE).text.strip()
         return title
 
     def _get_abstract(self, arxiv_el: ET.Element) -> str:
@@ -131,7 +121,7 @@ class ArxivPaperMetadataParser(PaperMetadataParser[ArxivPaperMetadataRecord]):
         Returns:
             str: The abstract of the record.
         """
-        abstract = arxiv_el.find("dc:description", NAMESPACE).text.strip()
+        abstract = arxiv_el.find("atom:summary", PAPER_NAMESPACE).text.strip()
         return abstract
 
     def _get_publication_date(self, arxiv_el: ET.Element) -> date:
@@ -145,22 +135,17 @@ class ArxivPaperMetadataParser(PaperMetadataParser[ArxivPaperMetadataRecord]):
         Returns:
             date: The date of the record.
         """
-        paper_date = arxiv_el.findall("dc:date", NAMESPACE)
-        paper_date = paper_date[-1].text.strip()
-        return date.fromisoformat(paper_date)
+        paper_date = arxiv_el.find("atom:published", PAPER_NAMESPACE)
+        paper_date = paper_date.text.strip()
+        return datetime.fromisoformat(paper_date).date()
 
-    def get_resumption_token(self, raw_data: str) -> Optional[str]:
-        """Extracts the resumption token from an arXiv API response XML.
+    def _get_primary_category(self, arxiv_el: ET.Element) -> str:
+        """Extracts the primary category from an arXiv API record element.
 
         Args:
-            raw_data (str): The XML text of the arXiv API response.
+            arxiv_el (ET.Element): The element of the arXiv API record.
 
         Returns:
-            Optional[str]: The resumption token if present, otherwise None.
+            str: The primary category of the record.
         """
-        resumption_token = None
-        root = ET.fromstring(raw_data)
-        token_el = root.find(".//oai:resumptionToken", NAMESPACE)
-        if token_el is not None and token_el.text is not None:
-            resumption_token = token_el.text.strip()
-        return resumption_token
+        return arxiv_el.find("arxiv:primary_category", PAPER_NAMESPACE).attrib["term"]

@@ -19,7 +19,8 @@ logger = LoggerManager.get_logger(__name__)
 
 
 class PaperMetadataIngestionService:
-    INGESTION_BATCH_SIZE: ClassVar[int] = 20
+    INGESTION_BATCH_SIZE: ClassVar[int] = 5
+    DAILY_PAPER_LIMIT: ClassVar[int] = 100
 
     def __init__(
         self,
@@ -171,6 +172,8 @@ class PaperMetadataIngestionService:
                     datasource_uuid,
                     session,
                 )
+                paper.authors.extend(authors)
+                await session.flush()
                 return paper
 
     async def run(
@@ -194,6 +197,9 @@ class PaperMetadataIngestionService:
         ingested_papers_count = 0
         async with self._db_session_factory() as session:
             async with session.begin():
+                domain_code = await self._get_domain_code_from_subject(
+                    subject_uuid, session
+                )
                 subject_code = await self._get_subject_code(subject_uuid, session)
                 datasource_type = await self._get_datasource_type(
                     datasource_uuid, session
@@ -202,7 +208,9 @@ class PaperMetadataIngestionService:
         ingestion = self._factory.get(datasource_type, self._http_client)
 
         jobs = []
-        async for paper in ingestion.run(subject_code, from_date, until_date):
+        async for paper in ingestion.run(
+            domain_code, subject_code, from_date, until_date
+        ):
             if paper is None:
                 continue
             jobs.append(self._ingest_one(paper, datasource_uuid, datasource_type))
@@ -210,11 +218,18 @@ class PaperMetadataIngestionService:
                 await asyncio.gather(*jobs)
                 ingested_papers_count += len(jobs)
                 jobs.clear()
+                logger.debug(
+                    "Total ingested papers", extra={"count": ingested_papers_count}
+                )
+
+            if ingested_papers_count >= self.DAILY_PAPER_LIMIT:
+                break
 
         if jobs:
             await asyncio.gather(*jobs)
             ingested_papers_count += len(jobs)
 
+        logger.debug("Total ingested papers", extra={"count": ingested_papers_count})
         return ingested_papers_count
 
     async def _get_datasource_type(self, datasource_uuid: UUID, session: AsyncSession):
@@ -254,6 +269,14 @@ class PaperMetadataIngestionService:
             raise ValueError("Subject not found")
 
         return subject.code
+
+    async def _get_domain_code_from_subject(
+        self, subject_uuid: UUID, session: AsyncSession
+    ):
+        domain = await self._db.subject.get_subject_domain(subject_uuid, session)
+        if domain is None:
+            raise ValueError("Domain not found")
+        return domain.code
 
     async def _get_domain(
         self,

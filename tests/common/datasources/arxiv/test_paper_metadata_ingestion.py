@@ -12,7 +12,8 @@ async def test_arxiv_paper_metadata_ingestion(httpx_async_client):
     arxiv_ingestion = ArxivPaperMetadataIngestion(client=httpx_async_client)
     papers = []
     async for paper in arxiv_ingestion.run(
-        subject_code="cs",
+        domain_code="cs.cs",
+        subject_code="cs.AI",
         from_date=datetime(2022, 1, 1),
         until_date=datetime(2022, 1, 1),
     ):

@@ -2,7 +2,7 @@ from datetime import date
 from typing import TYPE_CHECKING, List
 from uuid import uuid4
 
-from sqlalchemy import UUID, Date, ForeignKey, String, Text
+from sqlalchemy import UUID, Date, ForeignKey, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import BaseModel, TimestampModel
@@ -17,7 +17,14 @@ if TYPE_CHECKING:
 
 class Paper(BaseModel, TimestampModel):
     __tablename__ = "papers"
-
+    __table_args__ = (
+        UniqueConstraint(
+            "domain_id",
+            "datasource_id",
+            "paper_identifier",
+            name="uq_domain_datasource_paper_identifier",
+        ),
+    )
     id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
         default=uuid4,
@@ -32,6 +39,7 @@ class Paper(BaseModel, TimestampModel):
     authors: Mapped[List["Author"]] = relationship(
         secondary=paper_authors,
         back_populates="publications",
+        lazy="selectin",
     )
 
     datasource_id: Mapped[UUID] = mapped_column(

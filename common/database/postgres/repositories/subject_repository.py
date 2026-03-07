@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from sqlalchemy import UUID, func, select
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from common.database.postgres.models import Domain, Subject
@@ -16,18 +16,23 @@ class SubjectRepository(BaseRepository[Subject]):
     async def create(self, model: Subject, session: AsyncSession) -> Subject:
         """Creates a model."""
         # TODO: refactor
-        try:
-            async with session.begin_nested():
-                session.add(model)
-                await session.flush()
-                return model
-        except IntegrityError:
-            query = select(Subject).where(
-                Subject.domain_id == model.domain_id,
-                Subject.code == model.code,
+        smtm = (
+            insert(Subject)
+            .values(code=model.code, domain_id=model.domain_id, name=model.name)
+            .on_conflict_do_nothing(index_elements=["code", "domain_id"])
+            .returning(Subject)
+        )
+        result = await session.execute(smtm)
+        row = result.scalar_one_or_none()
+        if row is None:
+            result = await session.execute(
+                select(Subject).where(
+                    Subject.domain_id == model.domain_id,
+                    Subject.code == model.code,
+                )
             )
-            result = await session.execute(query)
-            return result.scalar_one()
+            row = result.scalar_one()
+        return row
 
     async def get_by_code(self, code: str, session: AsyncSession) -> Optional[Subject]:
         """Returns a subject by code."""
@@ -50,6 +55,12 @@ class SubjectRepository(BaseRepository[Subject]):
         query = select(Subject).where(Subject.domain_id == domain_uuid)
         rows = await session.execute(query)
         return rows.scalars().all()
+
+    async def get_subject_domain(self, subject_uuid: UUID, session: AsyncSession):
+        """Returns a subject's domain."""
+        query = select(Domain).join(Subject.domain).where(Subject.id == subject_uuid)
+        rows = await session.execute(query)
+        return rows.scalar_one_or_none()
 
     async def get_by_uuid(self, subject_uuid: UUID, session: AsyncSession):
         """Returns a subject by UUID."""

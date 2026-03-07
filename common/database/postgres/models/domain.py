@@ -15,7 +15,9 @@ if TYPE_CHECKING:
 
 class Domain(BaseModel):
     __tablename__ = "domains"
-    __table_args__ = (UniqueConstraint("name", "code", name="uq_domain_source_code"),)
+    __table_args__ = (
+        UniqueConstraint("datasource_id", "code", name="uq_domains_datasource_code"),
+    )
 
     id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),

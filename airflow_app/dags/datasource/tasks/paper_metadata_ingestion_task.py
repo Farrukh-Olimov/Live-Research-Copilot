@@ -1,3 +1,10 @@
+# ruff: noqa: E402
+
+from common.utils.logger import LOG_MODULES, LoggerManager
+
+LoggerManager._log_module = LOG_MODULES.AIRFLOW
+LoggerManager.get_logger(__name__)
+
 import asyncio
 from datetime import timedelta
 from typing import List
@@ -12,9 +19,6 @@ from common.database.postgres.session import cleanup, get_session_factory, init_
 from common.datasources.factories import PaperMetadataIngestionFactory
 from common.metrics.stats_d import get_client
 from common.services.ingestion import PaperMetadataIngestionService
-from common.utils.logger import LOG_MODULES, LoggerManager
-
-LoggerManager._log_module = LOG_MODULES.AIRFLOW
 
 
 @task(
@@ -117,7 +121,7 @@ def load_subject_to_ingest(
                             domain_uuid=UUID(str(ingestion_state.domain_uuid)),
                             subject_uuid=UUID(str(subject.id)),
                             from_date=ingestion_state.cursor_date,
-                            until_date=ingestion_state.cursor_date + timedelta(days=10),
+                            until_date=ingestion_state.cursor_date + timedelta(days=7),
                         ).model_dump(mode="json")
                     )
         except Exception:
@@ -168,12 +172,12 @@ def flatten(records) -> List:
 
 
 @task(
-    retries=5,
+    retries=7,
     retry_delay=timedelta(minutes=5),
     retry_exponential_backoff=True,
-    max_retry_delay=timedelta(minutes=10),
-    sla=timedelta(hours=2),
-    execution_timeout=timedelta(hours=4),
+    max_retry_delay=timedelta(hours=2),
+    sla=timedelta(hours=6),
+    execution_timeout=timedelta(minutes=30),
 )
 def ingest_papers_task(subject_record: SubjectIngestionRecord):
     """Runs the paper metadata ingestion task for the given datasource type.

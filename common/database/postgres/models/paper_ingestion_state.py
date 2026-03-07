@@ -1,6 +1,14 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import UUID, Boolean, Date, ForeignKey, Integer, Sequence
+from sqlalchemy import (
+    UUID,
+    Boolean,
+    Date,
+    ForeignKey,
+    Integer,
+    Sequence,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import BaseModel
@@ -12,6 +20,11 @@ if TYPE_CHECKING:
 
 class PaperIngestionState(BaseModel):
     __tablename__ = "paper_ingestion_state"
+    __table_args__ = (
+        UniqueConstraint(
+            "datasource_id", "domain_id", name="uq_domain_datasource_paper_state"
+        ),
+    )
 
     id: Mapped[Integer] = mapped_column(
         Integer,

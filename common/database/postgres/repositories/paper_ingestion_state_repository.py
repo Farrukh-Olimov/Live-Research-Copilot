@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from sqlalchemy import UUID, func, select, update
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from common.database.postgres.models import Paper, PaperIngestionState
@@ -18,19 +18,28 @@ class PaperIngestionStateRepository(BaseRepository[PaperIngestionState]):
         self, model: PaperIngestionState, session: AsyncSession
     ) -> PaperIngestionState:
         """Creates a model."""
-        # TODO: refactor
-        try:
-            async with session.begin_nested():
-                session.add(model)
-                await session.flush()
-                return model
-        except IntegrityError:
-            query = select(PaperIngestionState).where(
-                PaperIngestionState.datasource_id == model.datasource_id,
-                PaperIngestionState.domain_id == model.domain_id,
+        stmt = (
+            insert(PaperIngestionState)
+            .values(
+                domain_id=model.domain_id,
+                datasource_id=model.datasource_id,
+                cursor_date=model.cursor_date,
+                is_active=model.is_active,
             )
-            result = await session.execute(query)
-            return result.scalar_one()
+            .on_conflict_do_nothing(index_elements=["datasource_id", "domain_id"])
+            .returning(PaperIngestionState)
+        )
+        result = await session.execute(stmt)
+        row = result.scalar_one_or_none()
+        if row is None:
+            result = await session.execute(
+                select(PaperIngestionState).where(
+                    PaperIngestionState.domain_id == model.domain_id,
+                    PaperIngestionState.datasource_id == model.datasource_id,
+                )
+            )
+            row = result.scalar_one()
+        return row
 
     async def get_by_datasource_domain(
         self, domain_id: UUID, datasource_id: UUID, session: AsyncSession

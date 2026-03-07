@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, List
 from uuid import uuid4
 
-from sqlalchemy import UUID, String
+from sqlalchemy import UUID, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import BaseModel
@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 
 class Author(BaseModel):
     __tablename__ = "authors"
+    __table_args__ = (UniqueConstraint("name", name="uq_author_name"),)
 
     id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),

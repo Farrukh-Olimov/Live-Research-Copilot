@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, List
 from uuid import uuid4
 
-from sqlalchemy import UUID, ForeignKey, Text
+from sqlalchemy import UUID, ForeignKey, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import BaseModel
@@ -13,7 +13,13 @@ if TYPE_CHECKING:
 
 class Subject(BaseModel):
     __tablename__ = "subjects"
-
+    __table_args__ = (
+        UniqueConstraint(
+            "code",
+            "domain_id",
+            name="uq_domain_subject_code",
+        ),
+    )
     id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
         default=uuid4,

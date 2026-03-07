@@ -2,7 +2,7 @@ from typing import List, Optional
 from uuid import UUID
 
 from sqlalchemy import func, select
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from common.database.postgres.models import Datasource, Paper
@@ -23,21 +23,35 @@ class PaperRepository(BaseRepository[Paper]):
 
     async def create(self, model: Paper, session: AsyncSession) -> Paper:
         """Creates a model."""
-        # TODO: refactor
-        try:
-            async with session.begin_nested():
-                session.add(model)
-                await session.flush()
-                return model
-        except IntegrityError:
-            query = select(Paper).where(
-                Paper.domain_id == model.domain_id,
-                Paper.datasource_id == model.datasource_id,
-                Paper.paper_identifier == model.paper_identifier,
-                Paper.title == model.title,
+        stmt = (
+            insert(Paper)
+            .values(
+                abstract=model.abstract,
+                datasource_id=model.datasource_id,
+                domain_id=model.domain_id,
+                main_author_id=model.main_author_id,
+                paper_identifier=model.paper_identifier,
+                publish_date=model.publish_date,
+                title=model.title,
             )
-            result = await session.execute(query)
-            return result.scalar_one()
+            .on_conflict_do_nothing(
+                index_elements=["domain_id", "datasource_id", "paper_identifier"]
+            )
+            .returning(Paper)
+        )
+        result = await session.execute(stmt)
+        row = result.scalar_one_or_none()
+        if row is None:
+            result = await session.execute(
+                select(Paper).where(
+                    Paper.domain_id == model.domain_id,
+                    Paper.datasource_id == model.datasource_id,
+                    Paper.paper_identifier == model.paper_identifier,
+                )
+            )
+            row = result.scalar_one()
+
+        return row
 
     async def get_by_title(self, title: str, session: AsyncSession) -> Optional[Paper]:
         """Get a paper by title."""

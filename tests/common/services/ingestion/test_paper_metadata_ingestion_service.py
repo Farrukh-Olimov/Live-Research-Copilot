@@ -90,7 +90,7 @@ class TestPaperMetadataIngestionService:
 
             created_domain = await self._database.domain.create(
                 Domain(
-                    code="cs",
+                    code="cs.cs",
                     name="Computer Science",
                     datasource_id=datasource.id,
                 ),

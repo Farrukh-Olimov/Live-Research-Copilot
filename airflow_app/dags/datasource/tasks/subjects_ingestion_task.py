@@ -1,3 +1,10 @@
+# ruff: noqa: E402
+
+from common.utils.logger import LOG_MODULES, LoggerManager
+
+LoggerManager._log_module = LOG_MODULES.AIRFLOW
+LoggerManager.get_logger(__name__)
+
 import asyncio
 from datetime import datetime, timedelta
 
@@ -11,9 +18,6 @@ from common.database.postgres.session import cleanup, get_session_factory, init_
 from common.datasources.factories import SubjectsFetcherFactory
 from common.metrics.stats_d import get_client
 from common.services.ingestion import SubjectsIngestionService
-from common.utils.logger import LOG_MODULES, LoggerManager
-
-LoggerManager._log_module = LOG_MODULES.AIRFLOW
 
 
 @task(

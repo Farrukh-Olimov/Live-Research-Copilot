@@ -36,21 +36,21 @@ def test_arxiv_parse_domain(httpx_async_client):
     """
     domains = {}
     fetcher = ArxivSubjectsFetcher(client=httpx_async_client, datasource_uuid=uuid4())
-    fetcher._parse_set("cs", "Computer Science", domains)
+    fetcher._parse_set("cs:cs", "Computer Science", domains)
 
     assert (
-        len(domains) == 1 and domains["cs"].code == "cs"
+        len(domains) == 1 and domains["cs.cs"].code == "cs.cs"
     ), "Expected domain code to be 'cs'"
 
     subject = fetcher._parse_set("cs:cs:ai", "Artificial Intelligence", domains)
 
     assert subject is not None, "Expected subject to be parsed"
-    assert subject.code == "cs:cs:ai", "Expected subject code to be 'cs:cs:ai'"
+    assert subject.code == "cs.AI", "Expected subject code to be 'cs.AI'"
     assert (
         subject.name == "Artificial Intelligence"
     ), "Expected subject name to be 'Artificial Intelligence'"
-    assert subject.domain.code == "cs", "Expected domain code to be 'cs'"
+    assert subject.domain.code == "cs.cs", "Expected domain code to be 'cs.cs'"
     assert (
         subject.domain.name == "Computer Science"
     ), "Expected domain name to be 'Computer Science'"
-    assert subject.domain is domains["cs"], "Expected domain to be cached"
+    assert subject.domain is domains["cs.cs"], "Expected domain to be cached"
