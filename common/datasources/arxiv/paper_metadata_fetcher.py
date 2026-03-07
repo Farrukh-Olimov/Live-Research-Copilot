@@ -79,7 +79,8 @@ class ArxivPaperMetadataFetcher(PaperMetadataFetcher[ArxivPaperMetadataRecord]):
         start_index = 0
         raw_data = ""
         total_fetched = 0
-        while raw_data is not None:
+        max_records = float("inf")
+        while raw_data is not None and start_index < max_records:
             params = self._get_request_parameters(
                 subject_code, from_date, until_date, start_index
             )
@@ -87,6 +88,7 @@ class ArxivPaperMetadataFetcher(PaperMetadataFetcher[ArxivPaperMetadataRecord]):
             if raw_data is None:
                 break
 
+            max_records = self._paper_parser.get_max_records(raw_data)
             records = self._paper_parser.parse(raw_data, domain_code)
             for record in records:
                 start_index += 1

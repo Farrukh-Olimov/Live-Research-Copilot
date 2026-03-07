@@ -13,6 +13,20 @@ logger = LoggerManager.get_logger(__name__)
 class ArxivPaperMetadataParser(PaperMetadataParser[ArxivPaperMetadataRecord]):
     DATASOURCE_NAME: ClassVar[str] = DATASOURCE_NAME
 
+    def get_max_records(self, raw_data: str) -> int:
+        """Gets the maximum number of records from an arXiv API response XML.
+
+        Args:
+            raw_data (str): The XML text of the arXiv API response.
+
+        Returns:
+            int: The maximum number of records in the arXiv API response.
+
+        """
+        root = ET.fromstring(raw_data)
+        total_results = root.find("opensearch:totalResults", PAPER_NAMESPACE).text
+        return int(total_results)
+
     def parse(self, raw_data: str, domain_code: str) -> List[ArxivPaperMetadataRecord]:
         """Parses an arXiv API response XML into a list of paper metadata objects.
 

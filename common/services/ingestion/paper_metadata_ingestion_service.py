@@ -120,7 +120,7 @@ class PaperMetadataIngestionService:
         paper_metadata: PaperMetadataRecord,
         datasource_uuid: UUID,
         datasource_type: DataSource,
-    ) -> Optional[Paper]:
+    ) -> bool:
         """Orchestrates the ingestion of a paper.
 
         Args:
@@ -130,7 +130,7 @@ class PaperMetadataIngestionService:
             session (AsyncSession): The database session.
 
         Returns:
-            Optional[Paper]: The ingested paper, or None if the ingestion failed.
+            bool: True if the ingestion was successful, False otherwise.
         """
         async with self._db_session_factory() as session:
             async with session.begin():
@@ -141,7 +141,7 @@ class PaperMetadataIngestionService:
                     session,
                 )
                 if domain is None:
-                    return None
+                    return False
 
                 # Get subjects
                 subject = await self._get_subject(
@@ -151,7 +151,7 @@ class PaperMetadataIngestionService:
                     session,
                 )
                 if subject is None:
-                    return None
+                    return False
 
                 secondary_subjects = await self._db.subject.get_by_codes(
                     paper_metadata.secondary_subject_codes, session
@@ -161,7 +161,7 @@ class PaperMetadataIngestionService:
                     paper_metadata.authors, datasource_uuid, datasource_type
                 )
                 if not authors:
-                    return None
+                    return False
 
                 paper = await self._get_or_create_paper(
                     paper_metadata,
@@ -172,9 +172,12 @@ class PaperMetadataIngestionService:
                     datasource_uuid,
                     session,
                 )
+                if paper is None:
+                    return False
+
                 paper.authors.extend(authors)
                 await session.flush()
-                return paper
+                return True
 
     async def run(
         self,
@@ -194,7 +197,7 @@ class PaperMetadataIngestionService:
         Returns:
             int: The number of papers ingested.
         """
-        ingested_papers_count = 0
+
         async with self._db_session_factory() as session:
             async with session.begin():
                 domain_code = await self._get_domain_code_from_subject(
@@ -206,7 +209,7 @@ class PaperMetadataIngestionService:
                 )
 
         ingestion = self._factory.get(datasource_type, self._http_client)
-
+        ingested_papers_count = 0
         jobs = []
         async for paper in ingestion.run(
             domain_code, subject_code, from_date, until_date
@@ -215,21 +218,18 @@ class PaperMetadataIngestionService:
                 continue
             jobs.append(self._ingest_one(paper, datasource_uuid, datasource_type))
             if len(jobs) >= self.INGESTION_BATCH_SIZE:
-                await asyncio.gather(*jobs)
-                ingested_papers_count += len(jobs)
+                ingested_count = sum(await asyncio.gather(*jobs))
+                ingested_papers_count += ingested_count
                 jobs.clear()
                 logger.debug(
                     "Total ingested papers", extra={"count": ingested_papers_count}
                 )
 
-            if ingested_papers_count >= self.DAILY_PAPER_LIMIT:
-                break
-
         if jobs:
-            await asyncio.gather(*jobs)
-            ingested_papers_count += len(jobs)
+            ingested_count = sum(await asyncio.gather(*jobs))
+            ingested_papers_count += ingested_count
 
-        logger.debug("Total ingested papers", extra={"count": ingested_papers_count})
+        logger.info("Total ingested papers", extra={"count": ingested_papers_count})
         return ingested_papers_count
 
     async def _get_datasource_type(self, datasource_uuid: UUID, session: AsyncSession):

@@ -57,6 +57,18 @@ class PaperMetadataParser(Generic[PaperSchemaType], ABC):
     DATASOURCE_NAME: ClassVar[str]
 
     @abstractmethod
+    def get_max_records(self, raw_data: str) -> int:
+        """Gets the maximum number of records from an API response XML.
+
+        Args:
+            raw_data (str): The XML text of the API response.
+
+        Returns:
+            int: The maximum number of records in the API response.
+        """
+        pass
+
+    @abstractmethod
     def parse(self, raw_data: Any, domain_code: str) -> List[PaperSchemaType]:
         """Parses raw data from the datasource into a PaperSchemaType object.
 
