@@ -197,7 +197,6 @@ class PaperMetadataIngestionService:
         Returns:
             int: The number of papers ingested.
         """
-
         async with self._db_session_factory() as session:
             async with session.begin():
                 domain_code = await self._get_domain_code_from_subject(
