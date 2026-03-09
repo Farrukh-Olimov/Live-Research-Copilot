@@ -146,13 +146,19 @@ def upgrade() -> None:
             "datasource_id",
             sa.UUID(),
             nullable=False,
-            comment="ID of the source from which this paper was ingested (e.g., arXiv, PubMed)",
+            comment=(
+                "ID of the source from which this paper was "
+                "ingested (e.g., arXiv, PubMed)"
+            ),
         ),
         sa.Column(
             "domain_id",
             sa.UUID(),
             nullable=False,
-            comment="ID of the high-level academic domain (e.g., Computer Science, Physics)",
+            comment=(
+                "ID of the high-level academic domain"
+                " (e.g., Computer Science, Physics)"
+            ),
         ),
         sa.Column(
             "main_author_id",
@@ -254,7 +260,10 @@ def upgrade() -> None:
             ["papers.id"],
         ),
         sa.PrimaryKeyConstraint("author_id", "paper_id"),
-        comment="Association table to represent many-to-many relationship between Papers and Authors",
+        comment=(
+            "Association table to represent many-to-many relationship "
+            "between Papers and Authors"
+        ),
     )
     op.create_table(
         "paper_subjects",
