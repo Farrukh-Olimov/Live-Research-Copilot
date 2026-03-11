@@ -163,7 +163,7 @@ class TestPaperMetadataIngestionService:
                 datasource.id,
                 DataSource.ARXIV,
             )
-            assert created_paper == False, "Paper should not be ingested"
+            assert not created_paper, "Paper should not be ingested"
 
             created_domain = await self._database.domain.create(
                 Domain(
@@ -189,7 +189,7 @@ class TestPaperMetadataIngestionService:
                 DataSource.ARXIV,
             )
             assert created_paper, "Paper should be ingested"
-           
+
     async def test_run(self):
         """Test the run method."""
         async with self._async_session_factory() as session:
