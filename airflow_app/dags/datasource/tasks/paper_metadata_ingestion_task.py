@@ -6,7 +6,7 @@ LoggerManager._log_module = LOG_MODULES.AIRFLOW
 LoggerManager.get_logger(__name__)
 
 import asyncio
-from datetime import timedelta
+from datetime import timedelta, datetime
 from typing import List
 from uuid import UUID
 
@@ -318,6 +318,9 @@ def update_statistics():
                 papers_total += papers_count
 
             statsd.gauge("papers.ingested.total", papers_total)
+            statsd.gauge(
+                "papers.ingested.total.last_run", int(datetime.now().timestamp())
+            )
 
             subjects2papers = list(
                 sorted(subjects2papers, key=lambda x: x[1], reverse=True)
@@ -337,6 +340,7 @@ def update_statistics():
                 "papers.ingested.by_subject.total.other",
                 other_paper_counts,
             )
+            
 
         except Exception as e:
             logger.error(

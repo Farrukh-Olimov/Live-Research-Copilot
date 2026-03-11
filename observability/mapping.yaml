@@ -13,3 +13,6 @@ mappings:
     name: "papers_ingested_by_subject_total"
     labels:
       subject: "$1"
+
+  - match: "papers.ingested.total.last_run"
+    name: "papers_ingested_total_last_run"
