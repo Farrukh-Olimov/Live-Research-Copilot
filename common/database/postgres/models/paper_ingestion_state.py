@@ -5,6 +5,7 @@ from sqlalchemy import (
     Boolean,
     Date,
     ForeignKey,
+    Index,
     Integer,
     Sequence,
     UniqueConstraint,
@@ -24,6 +25,9 @@ class PaperIngestionState(BaseModel):
         UniqueConstraint(
             "datasource_id", "domain_id", name="uq_domain_datasource_paper_state"
         ),
+        # Hash indexes for UUID FK columns — equality-only lookups
+        Index("ix_ingestion_datasource_id", "datasource_id", postgresql_using="hash"),
+        Index("ix_ingestion_domain_id", "domain_id", postgresql_using="hash"),
     )
 
     id: Mapped[Integer] = mapped_column(

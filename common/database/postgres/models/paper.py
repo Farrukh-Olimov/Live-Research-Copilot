@@ -1,8 +1,8 @@
 from datetime import date
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 from uuid import uuid4
 
-from sqlalchemy import UUID, Date, ForeignKey, String, Text, UniqueConstraint
+from sqlalchemy import UUID, Date, ForeignKey, Index, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import BaseModel, TimestampModel
@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from .author import Author
     from .datasource import Datasource
     from .domain import Domain
+    from .paper_processing_state import PaperProcessingState
     from .relationships.paper_subject import PaperSubject
 
 
@@ -24,6 +25,14 @@ class Paper(BaseModel, TimestampModel):
             "paper_identifier",
             name="uq_domain_datasource_paper_identifier",
         ),
+        # Hash indexes for UUID FK columns — equality-only lookups, no range queries
+        Index("ix_papers_datasource_id", "datasource_id", postgresql_using="hash"),
+        Index("ix_papers_domain_id", "domain_id", postgresql_using="hash"),
+        Index("ix_papers_main_author_id", "main_author_id", postgresql_using="hash"),
+        # B-tree for date — used in range queries (BETWEEN, >, <)
+        Index("ix_papers_publish_date", "publish_date"),
+        # Composite B-tree — datasource+domain always queried together for ingestion
+        Index("ix_papers_datasource_domain", "datasource_id", "domain_id"),
     )
     id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -82,6 +91,11 @@ class Paper(BaseModel, TimestampModel):
 
     paper_subjects: Mapped[List["PaperSubject"]] = relationship(
         back_populates="paper",
+    )
+    processing_state: Mapped[Optional["PaperProcessingState"]] = relationship(
+        back_populates="paper",
+        uselist=False,
+        lazy="selectin",
     )
     publish_date: Mapped[date] = mapped_column(
         Date, nullable=False, comment="Date of publication"

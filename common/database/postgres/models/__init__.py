@@ -4,6 +4,7 @@ from .datasource import Datasource
 from .domain import Domain
 from .paper import Paper
 from .paper_ingestion_state import PaperIngestionState
+from .paper_processing_state import PaperProcessingState
 from .relationships import paper_authors, paper_subject
 from .subject import Subject
 
@@ -17,4 +18,5 @@ __all__ = [
     "Subject",
     "paper_authors",
     "paper_subject",
+    "PaperProcessingState",
 ]
