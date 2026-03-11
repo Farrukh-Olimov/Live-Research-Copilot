@@ -8,7 +8,13 @@ from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from common.constants import DataSource
-from common.database.postgres.models import Author, Domain, Paper, Subject
+from common.database.postgres.models import (
+    Author,
+    Domain,
+    Paper,
+    PaperProcessingState,
+    Subject,
+)
 from common.database.postgres.models.relationships import PaperSubject
 from common.database.postgres.repositories import DatabaseRepository
 from common.datasources.factories import PaperMetadataIngestionFactory
@@ -97,6 +103,9 @@ class PaperMetadataIngestionService:
                 },
             )
             return None
+
+        state = PaperProcessingState(paper_id=paper.id)
+        await self._db.paper_processing_state.create(state, session)
 
         subjects = []
         subjects.append(

@@ -30,7 +30,6 @@ class PaperProcessingState(BaseModel, TimestampModel):
         ForeignKey("papers.id"),
         nullable=False,
         unique=True,
-        index=True,
         comment="ID of the paper",
     )
     paper: Mapped["Paper"] = relationship(

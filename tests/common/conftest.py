@@ -115,6 +115,7 @@ async def async_session_factory(async_engine):
                 """
                 TRUNCATE TABLE
                     paper_ingestion_state,
+                    paper_processing_states,
                     paper_authors,
                     paper_subjects,
                     papers,
