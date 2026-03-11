@@ -72,6 +72,7 @@ class Paper(BaseModel, TimestampModel):
     main_author_id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("authors.id"),
+        nullable=False,
         comment="ID of the main/primary author of the paper",
     )
     main_author: Mapped["Author"] = relationship(
@@ -93,6 +94,5 @@ class Paper(BaseModel, TimestampModel):
     paper_identifier: Mapped[str] = mapped_column(
         String,
         nullable=False,
-        unique=True,
         comment="Permanent URL or DOI of the paper",
     )

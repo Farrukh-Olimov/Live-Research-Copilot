@@ -1,6 +1,6 @@
 from typing import Optional
 
-from sqlalchemy import DateTime, func
+from sqlalchemy import DateTime, func, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, declared_attr, mapped_column
 
 
@@ -25,5 +25,9 @@ class TimestampModel:
     def updated_at(self) -> Mapped[DateTime]:
         """Timestamp of when the object was last updated."""
         return mapped_column(
-            DateTime(timezone=True), nullable=False, server_default=func.now()
+            DateTime(timezone=True),
+            nullable=False,
+            onupdate=func.now(),
+            server_default=func.now(),
+            server_onupdate=text("CURRENT_TIMESTAMP"),
         )

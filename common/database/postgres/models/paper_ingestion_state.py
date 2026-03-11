@@ -15,7 +15,7 @@ from .base import BaseModel
 
 if TYPE_CHECKING:
     from .datasource import Datasource
-    from .paper import Domain
+    from .domain import Domain
 
 
 class PaperIngestionState(BaseModel):

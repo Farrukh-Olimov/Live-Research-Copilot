@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 class Datasource(BaseModel):
     __tablename__ = "datasources"
-    __table_args__ = (UniqueConstraint(("name"), name="uq_datasources_name"),)
+    __table_args__ = (UniqueConstraint("name", name="uq_datasources_name"),)
     id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
         default=uuid4,
@@ -35,6 +35,6 @@ class Datasource(BaseModel):
         lazy="selectin",
     )
 
-    paper_ingestion_states: Mapped["PaperIngestionState"] = relationship(
+    paper_ingestion_states: Mapped[List["PaperIngestionState"]] = relationship(
         back_populates="datasource",
     )

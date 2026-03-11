@@ -28,7 +28,7 @@ class Domain(BaseModel):
     )
 
     code: Mapped[str] = mapped_column(
-        Text, nullable=True, comment="Code for the domain, e.g., CS, Physics"
+        Text, nullable=False, comment="Code for the domain, e.g., CS, Physics"
     )
     datasource_id: Mapped[UUID] = mapped_column(
         ForeignKey("datasources.id"),
@@ -50,7 +50,7 @@ class Domain(BaseModel):
         back_populates="domain",
     )
 
-    paper_ingestion_states: Mapped["PaperIngestionState"] = relationship(
+    paper_ingestion_states: Mapped[List["PaperIngestionState"]] = relationship(
         back_populates="domain",
     )
 
