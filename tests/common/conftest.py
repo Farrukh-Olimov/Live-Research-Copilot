@@ -120,7 +120,8 @@ async def async_session_factory(async_engine):
                     papers,
                     subjects,
                     domains,
-                    authors
+                    authors,
+                    datasources
                 RESTART IDENTITY CASCADE;
             """
             )

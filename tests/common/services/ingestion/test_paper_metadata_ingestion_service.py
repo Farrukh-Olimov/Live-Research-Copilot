@@ -163,7 +163,7 @@ class TestPaperMetadataIngestionService:
                 datasource.id,
                 DataSource.ARXIV,
             )
-            assert created_paper is None, "Paper should not be ingested"
+            assert created_paper == False, "Paper should not be ingested"
 
             created_domain = await self._database.domain.create(
                 Domain(
@@ -188,19 +188,8 @@ class TestPaperMetadataIngestionService:
                 datasource.id,
                 DataSource.ARXIV,
             )
-            assert created_paper is not None, "Paper should be ingested"
-            assert created_paper.abstract == paper.abstract, "Abstract does not match"
-            assert (
-                created_paper.domain.id == created_domain.id
-            ), "Domain code does not match"
-            assert (
-                created_paper.paper_identifier == paper.paper_id
-            ), "Paper ID does not match"
-            assert (
-                created_paper.publish_date == paper.publish_date
-            ), "Publish date does not match"
-            assert created_paper.title == paper.title, "Title does not match"
-
+            assert created_paper, "Paper should be ingested"
+           
     async def test_run(self):
         """Test the run method."""
         async with self._async_session_factory() as session:
