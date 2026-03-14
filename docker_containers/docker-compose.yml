@@ -24,10 +24,10 @@ services:
     user: "50000:0"
     volumes: 
       - ${AIRFLOW_PROJ_DIR:-.}/.docker.env:/opt/airflow/.env
-      - ${AIRFLOW_PROJ_DIR:-.}/airflow_app/dags:/opt/airflow/dags:z
-      - ${AIRFLOW_PROJ_DIR:-.}/airflow_app/config:/opt/airflow/config:z
-      - ${AIRFLOW_PROJ_DIR:-.}/airflow_app/plugins:/opt/airflow/plugins:z
-      - ${AIRFLOW_PROJ_DIR:-.}/common:/opt/airflow/common:z
+      - ${AIRFLOW_PROJ_DIR:-..}/airflow_app/dags:/opt/airflow/dags:z
+      - ${AIRFLOW_PROJ_DIR:-..}/airflow_app/config:/opt/airflow/config:z
+      - ${AIRFLOW_PROJ_DIR:-..}/airflow_app/plugins:/opt/airflow/plugins:z
+      - ${AIRFLOW_PROJ_DIR:-..}/common:/opt/airflow/common:z
 
     stdin_open: true
     tty: true
@@ -49,10 +49,39 @@ services:
     ports:
       - 8080:8080
 
+  minio: 
+    image: quay.io/minio/aistor/minio:latest
+    container_name: minio
+    env_file:
+    - ${ENV_FILE_PATH:-./.minio.env}
+    
+    ports: 
+      - "9000:9000"
+      - "9001:9001"
+    command: server /mnt/data --console-address ":9001" --license /minio.license
+    volumes:
+      - ../.minio_data/minio.license:/minio.license
+      - minio-data:/mnt/data
+      - minio-certs:/etc/minio/certs
+      
+    restart: unless-stopped
+
 volumes:
   postgres-db-volume:
     driver: local 
     driver_opts:
       type: none
       o: bind
-      device: ./.postgres_data
+      device: ../.postgres_data
+  minio-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ../.minio_data/data
+  minio-certs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ../.minio_data/certs

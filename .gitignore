@@ -100,4 +100,5 @@ __pypackages__/
 *.pt
 **/ckpts
 .postgres_data/
+.minio_data/
 pr_commits.py
