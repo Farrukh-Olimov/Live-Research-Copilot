@@ -6,7 +6,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from common.database.postgres.models import Datasource, Paper
-from common.database.postgres.models.relationships import PaperSubject
+from common.database.postgres.models.relationships import PaperSubject, paper_authors
 
 from .base_repository import BaseRepository
 
@@ -20,6 +20,17 @@ class PaperRepository(BaseRepository[Paper]):
         Calls the parent's __init__ with Paper as the model.
         """
         super().__init__(Paper)
+
+    async def add_author(
+        self, paper_uuid: UUID, author_uuid: UUID, session: AsyncSession
+    ):
+        """Add an author to a paper."""
+        stmt = (
+            insert(paper_authors)
+            .values(paper_id=paper_uuid, author_id=author_uuid)
+            .on_conflict_do_nothing()
+        )
+        await session.execute(stmt)
 
     async def create(self, model: Paper, session: AsyncSession) -> Paper:
         """Creates a model."""

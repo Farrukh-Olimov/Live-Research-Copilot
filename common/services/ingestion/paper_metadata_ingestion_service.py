@@ -4,7 +4,6 @@ from typing import ClassVar, List, Optional
 from uuid import UUID
 
 from httpx import AsyncClient
-from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from common.constants import DataSource
@@ -184,8 +183,8 @@ class PaperMetadataIngestionService:
                 if paper is None:
                     return False
 
-                paper.authors.extend(authors)
-                await session.flush()
+                for author in authors:
+                    await self._db.paper.add_author(paper.id, author.id, session)
                 return True
 
     async def run(
@@ -367,33 +366,13 @@ class PaperMetadataIngestionService:
         """
         # Get Authors
         database_authors = []
-        max_retry = 5
         for paper_author in paper_authors:
-            for retry in range(max_retry):
-                async with self._db_session_factory() as session:
-                    async with session.begin():
-                        try:
-                            author = Author(name=paper_author)
-                            database_authors.append(
-                                await self._db.author.create(author, session)
-                            )
-                            break
-                        except DBAPIError as e:
-                            if "deadlock detected" in str(e) and retry < max_retry:
-                                logger.warning(
-                                    "Deadlock detected, retrying",
-                                    exc_info=True,
-                                    extra={
-                                        "paper_author": paper_author,
-                                        "datasource": datasource_type,
-                                        "datasource_uuid": datasource_uuid,
-                                        "retry": retry,
-                                        "max_retry": max_retry,
-                                    },
-                                )
-                                await asyncio.sleep(1)
-                                continue
-                            break
+            async with self._db_session_factory() as session:
+                async with session.begin():
+                    author = Author(name=paper_author)
+                    database_authors.append(
+                        await self._db.author.create(author, session)
+                    )
 
         if len(database_authors) != len(paper_authors):
             logger.warning(

@@ -1,3 +1,4 @@
+from .paper_downloader import ArxivPaperDownloader
 from .paper_metadata_fetcher import ArxivPaperMetadataFetcher
 from .paper_metadata_ingestion import ArxivPaperMetadataIngestion
 from .paper_metadata_parser import ArxivPaperMetadataParser
@@ -10,4 +11,5 @@ __all__ = [
     "ArxivPaperMetadataIngestion",
     "ArxivPaperMetadataNormalize",
     "ArxivPaperMetadataParser",
+    "ArxivPaperDownloader",
 ]

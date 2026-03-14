@@ -4,7 +4,7 @@ from uuid import uuid4
 from sqlalchemy import UUID, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from common.database.postgres.contants import PaperProcessingStatus
+from common.database.postgres.constants import PaperProcessingStatus
 
 from .base import BaseModel, TimestampModel
 

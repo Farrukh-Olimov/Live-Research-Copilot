@@ -6,7 +6,7 @@ LoggerManager._log_module = LOG_MODULES.AIRFLOW
 LoggerManager.get_logger(__name__)
 
 import asyncio
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
 from typing import List
 from uuid import UUID
 
@@ -340,7 +340,6 @@ def update_statistics():
                 "papers.ingested.by_subject.total.other",
                 other_paper_counts,
             )
-            
 
         except Exception as e:
             logger.error(

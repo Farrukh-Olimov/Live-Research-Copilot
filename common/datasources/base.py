@@ -174,3 +174,26 @@ class PaperMetadataIngestion(Generic[PaperSchemaType], ABC):
                 paper metadata records.
         """
         pass
+
+
+class PaperDownloader(ABC):
+    DATASOURCE_NAME: ClassVar[str]
+    BASE_URL: ClassVar[str]
+
+    TIMEOUT: int = 30
+
+    def __init__(self, client: AsyncClient):
+        """Initialize the paper downloader."""
+        self._client = client
+
+    @abstractmethod
+    async def download(self, paper_identifier: str) -> bytes:
+        """Downloads a paper given its identifier.
+
+        Args:
+            paper_identifier (str): The identifier of the paper to download.
+
+        Returns:
+            bytes: The downloaded paper as bytes.
+        """
+        pass
