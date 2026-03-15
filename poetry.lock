@@ -6772,6 +6772,21 @@ shellingham = ">=1.3.0"
 typing-extensions = ">=3.7.4.3"
 
 [[package]]
+name = "types-aiobotocore-s3"
+version = "3.2.1"
+description = "Type annotations for aiobotocore S3 3.2.1 service generated with mypy-boto3-builder 8.12.0"
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "types_aiobotocore_s3-3.2.1-py3-none-any.whl", hash = "sha256:3f5b05c5e718c6a0265296f4f00770d30bdd74d2cc3ecb1edd6862855f997d6b"},
+    {file = "types_aiobotocore_s3-3.2.1.tar.gz", hash = "sha256:764f08d352f2cc4f8b84877ce9a4d1014b45b2325c70f1093ed09c0ce41f1abd"},
+]
+
+[package.dependencies]
+typing-extensions = {version = "*", markers = "python_version < \"3.12\""}
+
+[[package]]
 name = "types-awscrt"
 version = "0.31.3"
 description = "Type annotations and code completion for awscrt"
@@ -7658,4 +7673,4 @@ cffi = ["cffi (>=1.17,<2.0) ; platform_python_implementation != \"PyPy\" and pyt
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<3.14"
-content-hash = "ab2edddbdcf2d874d59af10b6de6bd413149a2700f5efddaa3e6676e44d32276"
+content-hash = "7024a83d67084e2d97d6170a732b69d1cd4685084eed2c3e052ad30dbc293b4d"

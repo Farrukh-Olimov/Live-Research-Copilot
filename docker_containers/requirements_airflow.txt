@@ -44,6 +44,7 @@ s3transfer==0.14.0
 six==1.17.0
 SQLAlchemy==2.0.46
 statsd==4.0.1
+types-aiobotocore-s3==3.2.1
 types-awscrt==0.31.3
 types-s3transfer==0.16.0
 typing-inspection==0.4.2
