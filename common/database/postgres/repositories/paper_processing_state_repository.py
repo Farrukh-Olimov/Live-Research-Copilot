@@ -1,10 +1,11 @@
 from uuid import UUID
 
 from sqlalchemy import select, update
+from sqlalchemy.orm import selectinload
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from common.database.postgres.constants import PaperProcessingStatus
+from common.constants.states import PaperProcessingStatus
 from common.database.postgres.models import Paper, PaperProcessingState
 
 from .base_repository import BaseRepository
@@ -78,6 +79,13 @@ class PaperProcessingStateRepository(BaseRepository[PaperProcessingState]):
         )
         await session.execute(stmt)
 
-        stmt = select(Paper).where(Paper.id.in_(papers_ids))
+        stmt = (
+            select(Paper)
+            .where(Paper.id.in_(papers_ids))
+            .options(
+                selectinload(Paper.domain),
+                selectinload(Paper.datasource),
+            )
+        )
         row = await session.execute(stmt)
         return row.scalars().all()
