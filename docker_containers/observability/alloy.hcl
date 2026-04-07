@@ -7,15 +7,16 @@ otelcol.receiver.otlp "default" {
 // ===== Processors =====
 otelcol.processor.batch "default" {}
 
-// ===== Loki Export =====
+// ===== Loki Write =====
 loki.write "loki" {
   endpoint {
     url = "http://loki:3100/loki/api/v1/push"
   }
 }
 
+// ===== Loki Exporter =====
 otelcol.exporter.loki "logs" {
-  forward_to = [loki.write.loki.receiver]
+  forward_to = [loki.write.loki]  // <--- remove .receiver
 }
 
 // ===== Tempo Export =====
