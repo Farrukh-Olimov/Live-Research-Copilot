@@ -57,6 +57,8 @@ services:
     volumes:
       - ./loki-config.yaml:/etc/loki/config.yaml
       - ./data/loki:/loki
+      - ./data/loki/wal:/wal              
+      - ./data/loki/compactor:/var/loki   
     ports:
       - "3100:3100"
     depends_on:
