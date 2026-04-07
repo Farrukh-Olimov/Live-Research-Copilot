@@ -33,15 +33,15 @@ otelcol.exporter.otlp "tempo" {
 otelcol.service "default" {
   pipelines {
     logs = {
-      receivers  = [otelcol.receiver.otlp.default]
-      processors = [otelcol.processor.batch.default]
-      exporters  = [otelcol.exporter.loki.logs]
+      receivers  = [otelcol.receiver.otlp.default],
+      processors = [otelcol.processor.batch.default],
+      exporters  = [otelcol.exporter.loki.logs],
     }
 
     traces = {
-      receivers  = [otelcol.receiver.otlp.default]
-      processors = [otelcol.processor.batch.default]
-      exporters  = [otelcol.exporter.otlp.tempo]
+      receivers  = [otelcol.receiver.otlp.default],
+      processors = [otelcol.processor.batch.default],
+      exporters  = [otelcol.exporter.otlp.tempo],
     }
   }
 }
