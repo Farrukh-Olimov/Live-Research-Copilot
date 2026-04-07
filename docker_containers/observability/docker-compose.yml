@@ -1,19 +1,17 @@
 services:
-  statsd-exporter:
-    image: prom/statsd-exporter:latest
-    container_name: statsd-exporter
-    mem_limit: 128m
-    cpus: "0.25"
-    ports:
-      - "8125:8125/udp"
-      - "9102:9102"
+ 
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: ["--config=/etc/otel/config.yaml"]
     volumes:
-      - ./mapping.yaml:/etc/statsd/mapping.yaml:ro
-    command:
-      - "--statsd.mapping-config=/etc/statsd/mapping.yaml"
-      - "--statsd.listen-udp=:8125"
-      - "--web.listen-address=:9102"
-    restart: unless-stopped
+      - ./otel-collector-config.yaml:/etc/otel/config.yaml
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+      - "9464:9464"   # Prometheus metrics endpoint
+    depends_on:
+      - loki
+      - tempo
 
   prometheus:
     image: prom/prometheus:latest
@@ -30,8 +28,23 @@ services:
       - "--storage.tsdb.retention.time=3d"
       - "--query.max-concurrency=2"
     restart: unless-stopped
-    depends_on:
-      - statsd-exporter
+    
+  loki:
+    image: grafana/loki:latest
+    command: -config.file=/etc/loki/config.yaml
+    volumes:
+      - ./loki-config.yaml:/etc/loki/config.yaml
+    ports:
+      - "3100:3100"
+
+  tempo:
+    image: grafana/tempo:latest
+    command: -config.file=/etc/tempo/config.yaml
+    volumes:
+      - ./tempo-config.yaml:/etc/tempo/config.yaml
+    ports:
+      - "3200:3200"
+  
 
   grafana:
     image: grafana/grafana:latest
@@ -47,3 +60,9 @@ services:
     restart: unless-stopped
     depends_on:
       - prometheus
+      - loki
+      - tempo
+
+  networks:
+    default:
+      name: observability-net
