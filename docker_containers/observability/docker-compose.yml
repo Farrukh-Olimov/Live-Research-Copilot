@@ -77,7 +77,6 @@ services:
       - ./data/tempo:/tmp/tempo
     ports:
       - "3200:3200"
-      - "4317:4317"
     depends_on:
       - init-volumes
     restart: unless-stopped
